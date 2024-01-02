@@ -28,6 +28,8 @@ class sqr:
         return self.cords
 
 
+
+
 def main():
     pygame.init()
 
@@ -40,12 +42,16 @@ def main():
 
     all_sprites = pygame.sprite.Group()
 
-    image = load_image("backround.jpg")
-    hero_image = pygame.transform.scale(image, (screen_w, screen_h))
+    image1 = load_image("backround.jpg")
+    bg_image = pygame.transform.scale(image1, (screen_w, screen_h))
     hero = pygame.sprite.Sprite(all_sprites)
-    hero.image = hero_image
+    hero.image = bg_image
     hero.rect = hero.image.get_rect()
     hero.rect.x, hero.rect.y = 0, 0
+
+    image2 = load_image("wb_backround.jpg")
+    wb_bg_image = pygame.transform.scale(image2, (screen_w, screen_h))
+    pixels = pygame.PixelArray(wb_bg_image)
 
     all_sprites.draw(screen)
 
@@ -58,8 +64,9 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and pixels[event.pos] == 0:
                 cords = event.pos
+
         if cords[0] != obj.get_cords()[0] + 50 or cords[1] != obj.get_cords()[1] + 150:
             x = 0
             y = 0
