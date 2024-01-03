@@ -2,8 +2,6 @@ import os
 import sys
 import pygame
 
-from core.handlers.base import corners
-
 
 def load_image(name):
     fullname = os.path.join('core/data', name)
@@ -66,8 +64,6 @@ def main():
     hero = Hero()
     hero(screen, 0, 0)
     cords = (460, 690)
-    x = 1
-    y = 1
     running = True
     while running:
         for event in pygame.event.get():
@@ -75,24 +71,11 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 cords = event.pos
-        # меняем корды героя если хоть 1 отличается от кордов клика,
-        # смотрим, является ли пиксель по цвету в ч\б фоне черным
-        if (cords[0] != hero.get_cords()[0] + 50 or cords[1] != hero.get_cords()[1] + 150) and pixels[cords] == 0:
-            # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
-            # то наш перс стоит в тупке, ниже код обхода этого тупика
-            if x == 0 and y == 0:
-                # в corners проверяем различные ситуации, когда ободить надо по разному
-                dx, dy = corners(hero.get_cords(), cords)
-                hero(screen, 0, dy)
-                # идем вниз или вверх до тех пор,
-                # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне
-                while pixels[hero.get_cords()[0] + 50 + dx, hero.get_cords()[1] + 150] != 0:
-                    hero(screen, 0, dy)
-                hero(screen, dx, 0)
 
+        # ниже буду всё менять (после and проверяем можно ли наступать на клетку с измененной координатой (получаем цвет))
+        if (cords[0] != hero.get_cords()[0] + 50 or cords[1] != hero.get_cords()[1] + 150) and pixels[event.pos] == 0:
             x = 0
             y = 0
-            # узнаем в каком направлении идти по x и y
             if cords[0] > hero.get_cords()[0] + 50 and pixels[hero.get_cords()[0] + 51, hero.get_cords()[1] + 150] == 0:
                 x = 1
             if cords[0] < hero.get_cords()[0] + 50 and pixels[hero.get_cords()[0] - 49, hero.get_cords()[1] + 150] == 0:
@@ -103,7 +86,6 @@ def main():
             if cords[1] < hero.get_cords()[1] + 150 and pixels[
                 hero.get_cords()[0] + 50, hero.get_cords()[1] + 149] == 0:
                 y = -1
-
             all_sprites.draw(screen)
             hero(screen, x, y)
 
