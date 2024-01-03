@@ -1,5 +1,5 @@
 import pygame
-
+from core.handlers.base import load_image
 
 # класс перса
 class Hero(pygame.sprite.Sprite):
@@ -31,19 +31,19 @@ class Hero(pygame.sprite.Sprite):
         return self.cords
 
 
-class item:
+class Entity(pygame.sprite.Sprite):
     def __init__(self):
+        super().__init__()
         self.cords = ()
-        # его начальные корды
-        self.x = 410
-        self.y = 540
+        self.f = False
 
     def __call__(self, screen, *args):
         # перерисовываем на новые корды (в args передеём х и у)
         self.x += args[0]
         self.y += args[1]
-        pygame.draw.rect(screen, 'red', (self.x, self.y, 100, 150), 8)
-        self.cords = (self.x, self.y)
+        self.coords = (self.x, self.y)
+
 
     def get_cords(self):
         return self.cords
+

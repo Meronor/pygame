@@ -1,7 +1,7 @@
 import pygame
 
 from core.handlers.base import corners, load_image
-from core.handlers.items import Hero
+from core.handlers.items import Hero, Entity
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
     screen_h = screen_info.current_h
 
     # растягиваем окно во весь экран
-    screen = pygame.display.set_mode((screen_w, screen_h), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((screen_w, screen_h))
     pygame.display.set_caption('Game')
 
     all_sprites = pygame.sprite.Group()
@@ -32,13 +32,22 @@ def main():
     pixels = pygame.PixelArray(wb_bg_image)
 
     clock = pygame.time.Clock()
+
     hero = Hero()
     hero_image = load_image("hero.jpg")
     hero.image = hero_image
     hero.rect = hero.image.get_rect()
     hero.image = pygame.transform.scale(hero_image, (175, 175))
-    hero.rect.x, hero.rect.y = 460, 490
+    hero.rect.x, hero.rect.y = screen_w * 0.75, screen_h * 0.75
     all_sprites.add(hero)
+
+    items = Entity()
+    item_image = load_image("i.jpg")
+    items.image = item_image
+    items.rect = items.image.get_rect()
+    items.image = pygame.transform.scale(item_image, (100, 100))
+    items.rect.x, items.rect.y = 250, 250
+    all_sprites.add(items)
 
     all_sprites.draw(screen)
     fd = True
@@ -57,6 +66,7 @@ def main():
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()
 
+
         # меняем корды героя если хоть 1 отличается от кордов клика,
         # смотрим, является ли пиксель по цвету в ч\б фоне черным
         if (cords[0] != hero.rect.x + 75 or cords[1] != hero.rect.y + 165) and pixels[cords] == 0:
@@ -72,6 +82,21 @@ def main():
             elif cords[1] < hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 165 - 1] == 0 and fd:
                 print(cords, (hero.rect.x + 75, hero.rect.y + 165))
                 y = -1
+
+        if (cords[0] != hero.rect.x + 75 or cords[1] != hero.rect.y + 165) and pixels[(cords[0], cords[1] - 30)] == 0:
+            x = 0
+            y = 0
+            # узнаем в каком направлении идти по x и y
+            if cords[0] > hero.rect.x + 75 and pixels[hero.rect.x + 75 + 1, hero.rect.y + 165] == 0 and fd:
+                x = 1
+            elif cords[0] < hero.rect.x + 75 and pixels[hero.rect.x + 75 - 1, hero.rect.y + 165] == 0 and fd:
+                x = -1
+            if cords[1] > hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 166] == 0 and fd:
+                y = 1
+            elif cords[1] < hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 165 - 1] == 0 and fd:
+                print(cords, (hero.rect.x + 75, hero.rect.y + 165))
+                y = -1
+
 
             hero.rect.x += x
             hero.rect.y += y
