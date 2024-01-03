@@ -63,13 +63,14 @@ def main():
             x = 0
             y = 0
             # узнаем в каком направлении идти по x и y
-            if cords[0] > hero.rect.x + 75 and pixels[hero.rect.x + 75 + 1, hero.rect.y + 165] == 0:
+            if cords[0] > hero.rect.x + 75 and pixels[hero.rect.x + 75 + 1, hero.rect.y + 165] == 0 and fd:
                 x = 1
-            elif cords[0] < hero.rect.x + 75 and pixels[hero.rect.x + 75 - 1, hero.rect.y + 165] == 0:
+            elif cords[0] < hero.rect.x + 75 and pixels[hero.rect.x + 75 - 1, hero.rect.y + 165] == 0 and fd:
                 x = -1
-            if cords[1] > hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 166] == 0:
+            if cords[1] > hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 166] == 0 and fd:
                 y = 1
-            elif cords[1] < hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 165 - 1] == 0:
+            elif cords[1] < hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 165 - 1] == 0 and fd:
+                print(cords, (hero.rect.x + 75, hero.rect.y + 165))
                 y = -1
 
             hero.rect.x += x
@@ -79,6 +80,7 @@ def main():
             # то наш перс стоит в тупике, ниже код обхода этого тупика
 
             if x == 0 and y == 0:
+                print(cords, (hero.rect.x + 75, hero.rect.y + 165))
                 # в corners проверяем различные ситуации, когда ободить надо по разному
                 if fd:
                     dx, dy = corners((hero.rect.x + 75, hero.rect.y + 165), cords)
