@@ -1,36 +1,7 @@
-import os
-import sys
 import pygame
 
-from core.handlers.base import corners
-
-
-def load_image(name):
-    fullname = os.path.join('core/data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
-
-
-# класс перса
-class Hero:
-    def __init__(self):
-        self.cords = ()
-        # его начальные корды
-        self.x = 410
-        self.y = 540
-
-    def __call__(self, screen, *args):
-        # перерисовываем на новые корды (в args передеём х и у)
-        self.x += args[0]
-        self.y += args[1]
-        pygame.draw.rect(screen, 'red', (self.x, self.y, 100, 150), 8)
-        self.cords = (self.x, self.y)
-
-    def get_cords(self):
-        return self.cords
+from core.handlers.base import corners, load_image
+from core.handlers.items import Hero
 
 
 def main():
@@ -60,14 +31,18 @@ def main():
     wb_bg_image = pygame.transform.scale(image2, (screen_w, screen_h))
     pixels = pygame.PixelArray(wb_bg_image)
 
-    all_sprites.draw(screen)
-
     clock = pygame.time.Clock()
     hero = Hero()
-    hero(screen, 0, 0)
-    cords = (460, 690)
-    x = 1
-    y = 1
+    hero_image = load_image("hero.jpg")
+    hero.image = hero_image
+    hero.rect = hero.image.get_rect()
+    hero.image = pygame.transform.scale(hero_image, (175, 175))
+    hero.rect.x, hero.rect.y = 460, 490
+    all_sprites.add(hero)
+
+    all_sprites.draw(screen)
+    fd = True
+    cords = (460, 490)
     running = True
     while running:
         for event in pygame.event.get():
@@ -75,37 +50,46 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 cords = event.pos
+                if hero.rect.x + 75 < cords[0] and hero.is_rotate():
+                    hero.image = pygame.transform.flip(hero.image, True, False)
+                    hero.rotate()
+                if hero.rect.x + 75 > cords[0] and not hero.is_rotate():
+                    hero.image = pygame.transform.flip(hero.image, True, False)
+                    hero.rotate()
+
         # меняем корды героя если хоть 1 отличается от кордов клика,
         # смотрим, является ли пиксель по цвету в ч\б фоне черным
-        if (cords[0] != hero.get_cords()[0] + 50 or cords[1] != hero.get_cords()[1] + 150) and pixels[cords] == 0:
-            # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
-            # то наш перс стоит в тупке, ниже код обхода этого тупика
-            if x == 0 and y == 0:
-                # в corners проверяем различные ситуации, когда ободить надо по разному
-                dx, dy = corners(hero.get_cords(), cords)
-                hero(screen, 0, dy)
-                # идем вниз или вверх до тех пор,
-                # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне
-                while pixels[hero.get_cords()[0] + 50 + dx, hero.get_cords()[1] + 150] != 0:
-                    hero(screen, 0, dy)
-                hero(screen, dx, 0)
-
+        if (cords[0] != hero.rect.x + 75 or cords[1] != hero.rect.y + 165) and pixels[cords] == 0:
             x = 0
             y = 0
             # узнаем в каком направлении идти по x и y
-            if cords[0] > hero.get_cords()[0] + 50 and pixels[hero.get_cords()[0] + 51, hero.get_cords()[1] + 150] == 0:
+            if cords[0] > hero.rect.x + 75 and pixels[hero.rect.x + 75 + 1, hero.rect.y + 165] == 0:
                 x = 1
-            if cords[0] < hero.get_cords()[0] + 50 and pixels[hero.get_cords()[0] - 49, hero.get_cords()[1] + 150] == 0:
+            elif cords[0] < hero.rect.x + 75 and pixels[hero.rect.x + 75 - 1, hero.rect.y + 165] == 0:
                 x = -1
-            if cords[1] > hero.get_cords()[1] + 150 and pixels[
-                hero.get_cords()[0] + 50, hero.get_cords()[1] + 151] == 0:
+            if cords[1] > hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 166] == 0:
                 y = 1
-            if cords[1] < hero.get_cords()[1] + 150 and pixels[
-                hero.get_cords()[0] + 50, hero.get_cords()[1] + 149] == 0:
+            elif cords[1] < hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 165 - 1] == 0:
                 y = -1
 
-            all_sprites.draw(screen)
-            hero(screen, x, y)
+            hero.rect.x += x
+            hero.rect.y += y
+
+            # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
+            # то наш перс стоит в тупике, ниже код обхода этого тупика
+
+            if x == 0 and y == 0:
+                # в corners проверяем различные ситуации, когда ободить надо по разному
+                if fd:
+                    dx, dy = corners((hero.rect.x + 75, hero.rect.y + 165), cords)
+                # идем вниз или вверх до тех пор,
+                # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне
+                if pixels[hero.rect.x + 75 + dx, hero.rect.y + 165] != 0:
+                    hero.rect.y += 1
+                    fd = False
+                else:
+                    fd = True
+        all_sprites.draw(screen)
 
         clock.tick(150)
         pygame.display.flip()
