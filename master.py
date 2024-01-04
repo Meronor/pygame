@@ -1,7 +1,7 @@
 import pygame
 
 from core.handlers.base import corners, load_image
-from core.handlers.items import Hero, Object
+from core.handlers.items import Hero, Object, Entity
 from core.data.constant import tk, hX, hY, dS
 
 
@@ -30,14 +30,22 @@ def main():
     pixels = pygame.PixelArray(wb_bg_image)
 
     clock = pygame.time.Clock()
+
     hero = Hero()
-    hero.image = pygame.transform.scale(load_image("hero.jpg"), (dS, dS))
     hero.rect = hero.image.get_rect()
-    # начальные координаты героя (левый верхний угол)
-    hero.set_rect(hX, hY)
+    hero.image = pygame.transform.scale(load_image("hero.jpg"), (dS, dS))
+    hero.rect.x, hero.rect.y = screen_w * 0.75, screen_h * 0.75
+
+    items = Entity()
+    item_image = load_image("i.jpg")
+    items.image = item_image
+    items.rect = items.image.get_rect()
+    items.image = pygame.transform.scale(item_image, (100, 100))
+    items.rect.x, items.rect.y = 250, 250
 
     all_sprites.add(bg)
     all_sprites.add(hero)
+    all_sprites.add(items)
 
     all_sprites.draw(screen)
     # fd = False - маркер того, что требуется обход препятствия (текущая пиксела не валидная)

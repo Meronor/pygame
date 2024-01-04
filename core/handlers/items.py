@@ -85,9 +85,18 @@ class Hero(Object):
 
 
 # класс предметов
-class Item(Object):
+class Entity(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        # его начальные корды
-        self.x = 0
-        self.y = 0
+        self.cords = ()
+        self.f = False
+
+    def __call__(self, screen, *args):
+        # перерисовываем на новые корды (в args передеём х и у)
+        self.x += args[0]
+        self.y += args[1]
+        self.coords = (self.x, self.y)
+
+
+    def get_cords(self):
+        return self.cords
