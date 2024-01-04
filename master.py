@@ -23,7 +23,7 @@ def main():
     bg = Object()
     bg.image = pygame.transform.scale(load_image("backround.jpg"), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
-    bg.set_rect(hX, hY)
+    bg.set_rect(0, 0)
 
     # растянутый задний фон в ч/б (границы ходьбы)
     wb_bg_image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
@@ -32,8 +32,8 @@ def main():
     clock = pygame.time.Clock()
 
     hero = Hero()
-    hero.rect = hero.image.get_rect()
     hero.image = pygame.transform.scale(load_image("hero.jpg"), (dS, dS))
+    hero.rect = hero.image.get_rect()
     hero.rect.x, hero.rect.y = screen_w * 0.75, screen_h * 0.75
 
     items = Entity()
