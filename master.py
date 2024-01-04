@@ -35,9 +35,8 @@ def main():
     clock = pygame.time.Clock()
     hero = Hero()
     hero_image = load_image("hero.jpg")
-    hero.image = hero_image
-    hero.rect = hero.image.get_rect()
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
+    hero.rect = hero.image.get_rect()
     # начальные координаты героя (левый верхний угол)
     hero.set_rect(hX, hY)
     all_sprites.add(hero)
@@ -91,7 +90,7 @@ def main():
 
                     # меняем корды героя на dx, dy, если возвращается True, мы обошли прпятствие,
                     # иначе повторяем код со следующим тиком
-                    fd = hero.overcomeStep(pixels, dx, dy)
+                    fd = hero.overcome_step(pixels, dx, dy)
 
         all_sprites.draw(screen)
 

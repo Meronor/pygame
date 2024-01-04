@@ -30,10 +30,9 @@ class Hero(Object):
         # повернут ли герой
         self.f = False
 
-    def __call__(self, screen, *args):
-        # перерисовываем героя на новые корды (в args передеём х и у)
-        self.x += args[0]
-        self.y += args[1]
+    def __call__(self, screen, x, y):
+        self.x += x
+        self.y += y
 
         self.cords = (self.x, self.y)
 
@@ -51,7 +50,6 @@ class Hero(Object):
 
     def set_diff(self, cords, pixels):
         sx, sy = 0, 0
-        print(cords, (self.centralX(), self.centralY()))
         if cords[0] > self.centralX() and pixels[self.centralX() + 1, self.centralY()] == 0:
             sx = 1
         elif cords[0] < self.centralX() and pixels[self.centralX() - 1, self.centralY()] == 0:
@@ -69,10 +67,9 @@ class Hero(Object):
         return sx, sy
 
     # идем вниз или вверх до тех пор,
-    # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный).
-    # ПРОВЕРИТЬ! судя по всему этот код только для сглаженной функции!
+    # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный)
     # НЕ РАБОТАЕТ при обходе вверх!
-    def overcomeStep(self, pixels, dx, dy):
+    def overcome_step(self, pixels, dx, dy):
         if pixels[self.centralX() + dx, self.centralY()] != 0:
             self.rect.y += dy
             return False
@@ -88,32 +85,9 @@ class Hero(Object):
 
 
 # класс предметов
-class Item:
+class Item(Object):
     def __init__(self):
-        self.cords = ()
-        # его начальные корды
-        self.x = 410
-        self.y = 540
-
-    def __call__(self, screen, *args):
-        # перерисовываем на новые корды (в args передеём х и у)
-        self.x += args[0]
-        self.y += args[1]
-        pygame.draw.rect(screen, 'red', (self.x, self.y, 100, 150), 8)
-        self.cords = (self.x, self.y)
-
-    def get_cords(self):
-        return self.cords
-
-
-# класс картинок
-class Image(pygame.sprite.Sprite):
-    def __init__(self, image):
         super().__init__()
-        self.cords = ()
-        # начальные корды
-        self.x = hX
-        self.y = hY
-
-    def get_cords(self):
-        return self.cords
+        # его начальные корды
+        self.x = 0
+        self.y = 0
