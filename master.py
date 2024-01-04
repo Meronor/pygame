@@ -1,8 +1,21 @@
 import pygame
+import pygetwindow
 
 from core.handlers.base import corners, load_image
 from core.handlers.items import Hero, Object, Entity
 from core.data.constant import tk, dS
+
+
+def get_diagonal_size_in_inches():
+    screen = pygetwindow.getWindowsWithTitle('')[0]  # Получаем информацию о первом найденном окне
+    width_px = screen.width
+    height_px = screen.height
+    screen_diagonal_px = (width_px ** 2 + height_px ** 2) ** 0.5
+    screen_diagonal_inches = screen_diagonal_px / screen.pixelSize[0]  # Получаем DPI из объекта screen
+    return screen_diagonal_inches
+
+diagonal_inches = get_diagonal_size_in_inches()
+print("Диагональ экрана: {:.2f} дюймов".format(diagonal_inches))
 
 
 def main():
@@ -12,6 +25,8 @@ def main():
     screen_info = pygame.display.Info()
     screen_w = screen_info.current_w
     screen_h = screen_info.current_h
+    dpi = pygame.display.get_dpi()
+    print(dpi)
 
     # растягиваем окно во весь экран
     screen = pygame.display.set_mode((screen_w, screen_h), pygame.FULLSCREEN)
@@ -21,7 +36,8 @@ def main():
 
     # получаем и растягиваем картинку на весь экран
     bg = Object()
-    bg.image = pygame.transform.scale(load_image("backround.jpg"), (screen_w, screen_h))
+    bg_image = "backround.jpg"
+    bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
     bg.set_rect(0, 0)
 
@@ -65,9 +81,15 @@ def main():
                 # задаем корды, к который пойдет герой
                 cords = event.pos
                 if (pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and
-                        bg.image != pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))):
-                    bg.image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
-                    hero.change_rect(screen_w * 0.75, screen_h * 0.75)
+                        bg_image != "wb_backround.jpg"):
+                    bg_image = "wb_backround.jpg"
+                    bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+                    hero.change_rect(screen_w * 0.85, screen_h * 0.75)
+                if (pixels[cords] == 254 and hero.get_cords()[0] > screen_w * 0.7 and
+                        bg_image != "backround.jpg"):
+                    bg_image = "backround.jpg"
+                    bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+                    hero.change_rect(screen_w * 0.01, screen_h * 0.75)
                 # при необходимости переворачиваем героя
                 hero.need_rotate(cords)
 

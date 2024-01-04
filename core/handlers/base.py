@@ -12,7 +12,7 @@ def load_image(name):
     return image
 
 
-# сложно, главное что работает
+# сложно, главное, что работает
 def corners(pos1, pos2):
     if pos2[0] - pos1[0] <= 0 > pos2[1] - pos1[1]:
         return -1, 1
