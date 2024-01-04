@@ -2,7 +2,7 @@ import pygame
 
 from core.handlers.base import corners, load_image
 from core.handlers.items import Hero, Object, Entity
-from core.data.constant import tk, hX, hY, dS
+from core.data.constant import tk, dS
 
 
 def main():
@@ -64,7 +64,10 @@ def main():
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # задаем корды, к который пойдет герой
                 cords = event.pos
-
+                if (pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and
+                        bg.image != pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))):
+                    bg.image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
+                    hero.change_rect(screen_w * 0.75, screen_h * 0.75)
                 # при необходимости переворачиваем героя
                 hero.need_rotate(cords)
 

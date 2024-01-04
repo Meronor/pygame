@@ -1,5 +1,5 @@
 import pygame
-from core.data.constant import hX, hY, hW, hH
+from core.data.constant import hW, hH
 
 
 # класс всех объектов на экране
@@ -8,15 +8,21 @@ class Object(pygame.sprite.Sprite):
         super().__init__()
         self.cords = ()
         # начальные корды
-        self.x = hX
-        self.y = hY
+        self.x = 0
+        self.y = 0
 
     def get_cords(self):
         return self.cords
 
-    def set_rect(self, sx, sy):
-        self.rect.x += sx
-        self.rect.y += sy
+    def set_rect(self, dx, dy):
+        self.rect.x += dx
+        self.rect.y += dy
+
+        self.cords = (self.rect.x, self.rect.y)
+
+    def change_rect(self, x, y):
+        self.rect.x = x
+        self.rect.y = y
 
 
 # класс перса
@@ -25,8 +31,8 @@ class Hero(Object):
         super().__init__()
         self.cords = ()
         # начальные корды
-        self.x = hX
-        self.y = hY
+        self.x = 0
+        self.y = 0
         # повернут ли герой
         self.f = False
 
