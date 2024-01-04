@@ -1,7 +1,7 @@
 import pygame
 
 from core.handlers.base import corners, load_image
-from core.handlers.items import Hero
+from core.handlers.items import Hero, Object
 from core.data.constant import tk, hX, hY, dS
 
 
@@ -20,25 +20,23 @@ def main():
     all_sprites = pygame.sprite.Group()
 
     # получаем и растягиваем картинку на весь экран
-    image1 = load_image("backround.jpg")
-    bg_image = pygame.transform.scale(image1, (screen_w, screen_h))
-    bg = pygame.sprite.Sprite(all_sprites)
-    bg.image = bg_image
+    bg = Object()
+    bg.image = pygame.transform.scale(load_image("backround.jpg"), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
-    bg.rect.x, bg.rect.y = 0, 0
+    bg.set_rect(hX, hY)
 
     # растянутый задний фон в ч/б (границы ходьбы)
-    image2 = load_image("wb_backround.jpg")
-    wb_bg_image = pygame.transform.scale(image2, (screen_w, screen_h))
+    wb_bg_image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
     pixels = pygame.PixelArray(wb_bg_image)
 
     clock = pygame.time.Clock()
     hero = Hero()
-    hero_image = load_image("hero.jpg")
-    hero.image = pygame.transform.scale(hero_image, (dS, dS))
+    hero.image = pygame.transform.scale(load_image("hero.jpg"), (dS, dS))
     hero.rect = hero.image.get_rect()
     # начальные координаты героя (левый верхний угол)
     hero.set_rect(hX, hY)
+
+    all_sprites.add(bg)
     all_sprites.add(hero)
 
     all_sprites.draw(screen)
