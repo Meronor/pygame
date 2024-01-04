@@ -2,6 +2,7 @@ import pygame
 
 from core.handlers.base import corners, load_image
 from core.handlers.items import Hero
+from core.data.constant import tk, hX, hY, dS
 
 
 def main():
@@ -36,65 +37,67 @@ def main():
     hero_image = load_image("hero.jpg")
     hero.image = hero_image
     hero.rect = hero.image.get_rect()
-    hero.image = pygame.transform.scale(hero_image, (175, 175))
-    hero.rect.x, hero.rect.y = 460, 490
+    hero.image = pygame.transform.scale(hero_image, (dS, dS))
+    # начальные координаты героя (левый верхний угол)
+    hero.set_rect(hX, hY)
     all_sprites.add(hero)
 
     all_sprites.draw(screen)
+    # fd = False - маркер того, что требуется обход препятствия (текущая пиксела не валидная)
     fd = True
-    cords = (460, 490)
+    # задаем "первый клик"
+    cords = (hX, hY)
     running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+
+            # выход из программы по клавише Esc
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
             if event.type == pygame.MOUSEBUTTONDOWN:
+                # задаем корды, к который пойдет герой
                 cords = event.pos
-                if hero.rect.x + 75 < cords[0] and hero.is_rotate():
+
+                # проверка необходимости перевернуть героя
+                if hero.centralX() < cords[0] and hero.is_rotate():
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()
-                if hero.rect.x + 75 > cords[0] and not hero.is_rotate():
+                if hero.centralX() > cords[0] and not hero.is_rotate():
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()
 
-        # меняем корды героя если хоть 1 отличается от кордов клика,
-        # смотрим, является ли пиксель по цвету в ч\б фоне черным
-        if (cords[0] != hero.rect.x + 75 or cords[1] != hero.rect.y + 165) and pixels[cords] == 0:
-            x = 0
-            y = 0
-            # узнаем в каком направлении идти по x и y
-            if cords[0] > hero.rect.x + 75 and pixels[hero.rect.x + 75 + 1, hero.rect.y + 165] == 0 and fd:
-                x = 1
-            elif cords[0] < hero.rect.x + 75 and pixels[hero.rect.x + 75 - 1, hero.rect.y + 165] == 0 and fd:
-                x = -1
-            if cords[1] > hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 166] == 0 and fd:
-                y = 1
-            elif cords[1] < hero.rect.y + 165 and pixels[hero.rect.x + 75, hero.rect.y + 165 - 1] == 0 and fd:
-                print(cords, (hero.rect.x + 75, hero.rect.y + 165))
-                y = -1
+        # смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
+        if pixels[cords] == 0:
+            # меняем корды героя, если хоть одна отличается от кордов клика
+            if hero.need_step(cords):
+                x, y = 0, 0
 
-            hero.rect.x += x
-            hero.rect.y += y
-
-            # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
-            # то наш перс стоит в тупике, ниже код обхода этого тупика
-
-            if x == 0 and y == 0:
-                print(cords, (hero.rect.x + 75, hero.rect.y + 165))
-                # в corners проверяем различные ситуации, когда ободить надо по разному
+                # проверяем, обходит ли герой в данный момент препятствие
                 if fd:
-                    dx, dy = corners((hero.rect.x + 75, hero.rect.y + 165), cords)
-                # идем вниз или вверх до тех пор,
-                # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне
-                if pixels[hero.rect.x + 75 + dx, hero.rect.y + 165] != 0:
-                    hero.rect.y += 1
-                    fd = False
-                else:
-                    fd = True
+                    # делаем шаг
+                    x, y = hero.next_step(cords, pixels)
+
+                # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
+                # то наш перс стоит в тупике, ниже код обхода этого тупика
+                if x == 0 and y == 0:
+                    # если fd = False, наш герой уже обходит препятствие
+                    if fd:
+                        # в corners проверяем различные ситуации, когда обходить надо по разному
+                        dx, dy = corners((hero.centralX(), hero.centralY()), cords)
+
+                    # меняем корды героя на dx, dy, если возвращается True, мы обошли прпятствие,
+                    # иначе повторяем код со следующим тиком
+                    fd = hero.overcomeStep(pixels, dx, dy)
+
         all_sprites.draw(screen)
 
-        clock.tick(150)
+        clock.tick(tk)
         pygame.display.flip()
+
     pygame.quit()
 
 
