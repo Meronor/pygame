@@ -36,6 +36,14 @@ class Hero(Object):
 
         self.cords = (self.x, self.y)
 
+    def need_rotate(self, cords):
+        if self.centralX() > cords[0] and self.is_rotate():
+            self.image = pygame.transform.flip(self.image, True, False)
+            self.rotate()
+        if self.centralX() < cords[0] and not self.is_rotate():
+            self.image = pygame.transform.flip(self.image, True, False)
+            self.rotate()
+
     def is_rotate(self):
         return self.f
 

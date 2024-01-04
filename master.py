@@ -34,24 +34,22 @@ def main():
     hero = Hero()
     hero.image = pygame.transform.scale(load_image("hero.jpg"), (dS, dS))
     hero.rect = hero.image.get_rect()
-    hero.rect.x, hero.rect.y = screen_w * 0.75, screen_h * 0.75
+    hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     items = Entity()
-    item_image = load_image("i.jpg")
-    items.image = item_image
+    items.image = pygame.transform.scale(load_image("i.jpg"), (100, 100))
     items.rect = items.image.get_rect()
-    items.image = pygame.transform.scale(item_image, (100, 100))
-    items.rect.x, items.rect.y = 250, 250
+    items.set_rect(250, 250)
 
     all_sprites.add(bg)
     all_sprites.add(hero)
-    all_sprites.add(items)
+    # all_sprites.add(items)
 
     all_sprites.draw(screen)
     # fd = False - маркер того, что требуется обход препятствия (текущая пиксела не валидная)
     fd = True
     # задаем "первый клик"
-    cords = (hX, hY)
+    cords = (screen_w * 0.75, screen_h * 0.75)
     running = True
     while running:
         for event in pygame.event.get():
@@ -67,13 +65,8 @@ def main():
                 # задаем корды, к который пойдет герой
                 cords = event.pos
 
-                # проверка необходимости перевернуть героя
-                if hero.centralX() < cords[0] and hero.is_rotate():
-                    hero.image = pygame.transform.flip(hero.image, True, False)
-                    hero.rotate()
-                if hero.centralX() > cords[0] and not hero.is_rotate():
-                    hero.image = pygame.transform.flip(hero.image, True, False)
-                    hero.rotate()
+                # при необходимости переворачиваем героя
+                hero.need_rotate(cords)
 
         # смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
         if pixels[cords] == 0:
