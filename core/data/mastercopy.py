@@ -60,13 +60,14 @@ def main():
     cord1 = hero.rect.x
     cord2 = hero.rect.y
     while running:
-        print(ccount, cccount)
+        print(hero.rect.x, hero.rect.y)
         if ccount != 15 and cccount == 0:
             hero.image = pygame.transform.scale(load_image(f"movement/move{ccount}.PNG"), (dS, dS))
             hero.rect = hero.image.get_rect()
             hero.rect.x, hero.rect.y = cord1, cord2
             if mirr == True:
                 hero.image = pygame.transform.flip(hero.image, True, False)
+            print(mirr)
         elif ccount != 15 and cccount == 1:
             hero.image = pygame.transform.scale(load_image(f"movement/move{ccount + 15}.PNG"), (dS, dS))
             hero.rect = hero.image.get_rect()
@@ -94,9 +95,11 @@ def main():
                 # проверка необходимости перевернуть героя
                 if hero.centralX() < cords[0] and hero.is_rotate():
                     mirr = False
+                    print('1s')
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()
                 if hero.centralX() > cords[0] and not hero.is_rotate():
+                    print('2s')
                     mirr = True
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()

@@ -32,7 +32,7 @@ def main():
     clock = pygame.time.Clock()
 
     hero = Hero()
-    hero.image = pygame.transform.scale(load_image("movement/move0.PNG"), (dS, dS))
+    hero.image = pygame.transform.scale(load_image("hero.jpg"), (dS, dS))
     hero.rect = hero.image.get_rect()
     hero.rect.x, hero.rect.y = screen_w * 0.75, screen_h * 0.75
 
@@ -53,31 +53,8 @@ def main():
     # задаем "первый клик"
     cords = (hX, hY)
     running = True
-    count = 0
-    ccount = 0
-    cccount = 0
-    mirr = False
-    cord1 = hero.rect.x
-    cord2 = hero.rect.y
     while running:
-        print(ccount, cccount)
-        if ccount != 15 and cccount == 0:
-            hero.image = pygame.transform.scale(load_image(f"movement/move{ccount}.PNG"), (dS, dS))
-            hero.rect = hero.image.get_rect()
-            hero.rect.x, hero.rect.y = cord1, cord2
-            if mirr == True:
-                hero.image = pygame.transform.flip(hero.image, True, False)
-        elif ccount != 15 and cccount == 1:
-            hero.image = pygame.transform.scale(load_image(f"movement/move{ccount + 15}.PNG"), (dS, dS))
-            hero.rect = hero.image.get_rect()
-            hero.rect.x, hero.rect.y = cord1, cord2
-            if mirr == True:
-                hero.image = pygame.transform.flip(hero.image, True, False)
-        elif ccount == 15 and cccount == 0:
-            ccount = 0
-        elif ccount == 15 and cccount == 1:
-            ccount = 0
-            cccount = 0
+        print(hero.rect.x, hero.rect.y)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -93,11 +70,9 @@ def main():
 
                 # проверка необходимости перевернуть героя
                 if hero.centralX() < cords[0] and hero.is_rotate():
-                    mirr = False
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()
                 if hero.centralX() > cords[0] and not hero.is_rotate():
-                    mirr = True
                     hero.image = pygame.transform.flip(hero.image, True, False)
                     hero.rotate()
 
@@ -106,11 +81,12 @@ def main():
             # меняем корды героя, если хоть одна отличается от кордов клика
             if hero.need_step(cords):
                 x, y = 0, 0
+
                 # проверяем, обходит ли герой в данный момент препятствие
                 if fd:
                     # делаем шаг
                     x, y = hero.next_step(cords, pixels)
-                    count += 1
+
                 # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
                 # то наш перс стоит в тупике, ниже код обхода этого тупика
                 if x == 0 and y == 0:
@@ -123,13 +99,7 @@ def main():
                     # иначе повторяем код со следующим тиком
                     fd = hero.overcome_step(pixels, dx, dy)
 
-        if count % 4 == 0 and count != 0:
-            all_sprites.draw(screen)
-            ccount += 1
-            if ccount == 15 and cccount == 0:
-                cccount = 1
-                ccount = 0
-        cord1, cord2 = hero.rect.x, hero.rect.y
+        all_sprites.draw(screen)
 
         clock.tick(tk)
         pygame.display.flip()
