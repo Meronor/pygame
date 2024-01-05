@@ -1,21 +1,8 @@
 import pygame
-import pygetwindow
 
 from core.handlers.base import corners, load_image
 from core.handlers.items import Hero, Object, Entity
 from core.data.constant import tk, dS
-
-
-def get_diagonal_size_in_inches():
-    screen = pygetwindow.getWindowsWithTitle('')[0]  # Получаем информацию о первом найденном окне
-    width_px = screen.width
-    height_px = screen.height
-    screen_diagonal_px = (width_px ** 2 + height_px ** 2) ** 0.5
-    screen_diagonal_inches = screen_diagonal_px / screen.pixelSize[0]  # Получаем DPI из объекта screen
-    return screen_diagonal_inches
-
-diagonal_inches = get_diagonal_size_in_inches()
-print("Диагональ экрана: {:.2f} дюймов".format(diagonal_inches))
 
 
 def main():
@@ -25,8 +12,6 @@ def main():
     screen_info = pygame.display.Info()
     screen_w = screen_info.current_w
     screen_h = screen_info.current_h
-    dpi = pygame.display.get_dpi()
-    print(dpi)
 
     # растягиваем окно во весь экран
     screen = pygame.display.set_mode((screen_w, screen_h), pygame.FULLSCREEN)
