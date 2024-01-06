@@ -36,14 +36,15 @@ def main():
     hero.rect = hero.image.get_rect()
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
-    items = Entity()
+    items = Entity(250, 750, True)
     items.image = pygame.transform.scale(load_image("i.jpg"), (100, 100))
     items.rect = items.image.get_rect()
-    items.set_rect(250, 250)
+
+    items.set_rect(250, 750)
 
     all_sprites.add(bg)
     all_sprites.add(hero)
-    # all_sprites.add(items)
+    all_sprites.add(items)
 
     all_sprites.draw(screen)
     # fd = False - маркер того, что требуется обход препятствия (текущая пиксела не валидная)
@@ -70,6 +71,11 @@ def main():
                     hero.change_rect(screen_w * 0.75, screen_h * 0.75)
                 # при необходимости переворачиваем героя
                 hero.need_rotate(cords)
+                # проверяем, можно ли подобрать предмет, если да, то подбираем
+                items.pick_up(pygame.mouse.get_pos(), hero.get_cords())
+                if items.visible() == False:
+                    all_sprites.remove(items)
+
 
         # смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
         if pixels[cords] == 0:
