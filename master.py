@@ -66,14 +66,18 @@ def main():
                 # задаем корды, к который пойдет герой
                 cords = event.pos
                 if (pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and
-                        bg_image != "wb_backround.jpg"):
-                    bg_image = "wb_backround.jpg"
+                        bg_image != "background_river.jpg"):
+                    bg_image = "background_river.jpg"
                     bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+                    wb_bg_image = pygame.transform.scale(load_image("wb_background_river.jpg"), (screen_w, screen_h))
+                    pixels = pygame.PixelArray(wb_bg_image)
                     hero.change_rect(screen_w * 0.85, screen_h * 0.75)
                 if (pixels[cords] == 254 and hero.get_cords()[0] > screen_w * 0.7 and
                         bg_image != "backround.jpg"):
                     bg_image = "backround.jpg"
                     bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+                    wb_bg_image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
+                    pixels = pygame.PixelArray(wb_bg_image)
                     hero.change_rect(screen_w * 0.01, screen_h * 0.75)
                 # при необходимости переворачиваем героя
                 hero.need_rotate(cords)
