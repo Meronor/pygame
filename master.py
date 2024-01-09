@@ -59,25 +59,16 @@ def main():
     mirr = False
     cord1 = hero.rect.x
     cord2 = hero.rect.y
+    spFOX = [load_image(f"movement/move{x}.PNG") for x in range(30)]
+    lenFOX = len(spFOX)
     while running:
         print(ccount, cccount)
-        if ccount != 15 and cccount == 0:
-            hero.image = pygame.transform.scale(load_image(f"movement/move{ccount}.PNG"), (dS, dS))
-            hero.rect = hero.image.get_rect()
-            hero.rect.x, hero.rect.y = cord1, cord2
-            if mirr == True:
-                hero.image = pygame.transform.flip(hero.image, True, False)
-        elif ccount != 15 and cccount == 1:
-            hero.image = pygame.transform.scale(load_image(f"movement/move{ccount + 15}.PNG"), (dS, dS))
-            hero.rect = hero.image.get_rect()
-            hero.rect.x, hero.rect.y = cord1, cord2
-            if mirr == True:
-                hero.image = pygame.transform.flip(hero.image, True, False)
-        elif ccount == 15 and cccount == 0:
-            ccount = 0
-        elif ccount == 15 and cccount == 1:
-            ccount = 0
-            cccount = 0
+        hero.image = pygame.transform.scale(spFOX[ccount % lenFOX], (dS, dS))
+        hero.rect = hero.image.get_rect()
+        hero.rect.x, hero.rect.y = cord1, cord2
+        if mirr == True:
+            hero.image = pygame.transform.flip(hero.image, True, False)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
