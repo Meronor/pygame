@@ -103,13 +103,15 @@ class Hero(Object):
 
 # класс предметов
 class Entity(Object):
-    def __init__(self, x, y, visible):
+    def __init__(self, x, y, visible, bg):
         super().__init__()
         self.x = x
         self.y = y
         self.size = (100, 100)
         self.cords = (self.x, self.y)
         self.is_visible = visible
+        self.bg = bg
+        self.picked_up = False
 
 
     def __call__(self, screen, x, y):
@@ -118,17 +120,23 @@ class Entity(Object):
 
         self.cords = (self.x, self.y)
 
-
-    def disappear(self):
-        self.is_visible = False
-
     def visible(self):
         return self.is_visible
 
     def pick_up(self, mouse_cords, hero_cords):
         # проверка, находится ли курсор на энтити и как далеко находится герой
-        if (self.x <= mouse_cords[0] <= self.x + self.size[0] and self.y <= mouse_cords[1] <= self.y + self.size[1])\
-                and (0 <= self.x - hero_cords[0] <= 50 or 0 >= (self.x + self.size[0]) - hero_cords[0] >= -50):
+        if self.is_visible == True:
+            if (self.x <= mouse_cords[0] <= self.x + self.size[0] and self.y <= mouse_cords[1] <= self.y + self.size[1])\
+                    and (0 <= self.x - hero_cords[0] <= 50 or 0 >= (self.x + self.size[0]) - hero_cords[0] >= -50):
+                self.picked_up = True
+                self.is_visible = False
+                #print('clicked')
 
-            self.disappear()
-            print('clicked')
+    def bg_check(self, cur_bg):
+        if self.bg != cur_bg:
+            self.is_visible = False
+        elif self.bg == cur_bg and self.picked_up == False:
+            self.is_visible = True
+        elif self.bg == cur_bg and self.picked_up == True:
+            self.is_visible = False
+

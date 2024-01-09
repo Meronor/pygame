@@ -14,7 +14,7 @@ def main():
     screen_h = screen_info.current_h
 
     # растягиваем окно во весь экран
-    screen = pygame.display.set_mode((screen_w, screen_h), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((screen_w, screen_h))
     pygame.display.set_caption('Game')
 
     all_sprites = pygame.sprite.Group()
@@ -37,10 +37,9 @@ def main():
     hero.rect = hero.image.get_rect()
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
-    items = Entity(250, 750, True)
+    items = Entity(250, 750, True, 'background.jpg')
     items.image = pygame.transform.scale(load_image("i.jpg"), (100, 100))
     items.rect = items.image.get_rect()
-
     items.set_rect(250, 750)
 
     all_sprites.add(bg)
@@ -84,8 +83,11 @@ def main():
                 hero.need_rotate(cords)
                 # проверяем, можно ли подобрать предмет, если да, то подбираем
                 items.pick_up(pygame.mouse.get_pos(), hero.get_cords())
-                if items.visible() == False:
+                items.bg_check(bg_image)
+                if items.visible() == False and items in all_sprites:
                     all_sprites.remove(items)
+                elif items.visible() == True and items not in all_sprites:
+                    all_sprites.add(items)
 
 
         # смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
