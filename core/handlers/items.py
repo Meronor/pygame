@@ -81,7 +81,7 @@ class Hero(Object):
     def next_step(self, cords, pixels):
         sx, sy = self.set_diff(cords, pixels)
         self.set_rect(sx, sy)
-        return sx, sy
+        return (sx, sy) == (0, 0)
 
     # идем вниз или вверх до тех пор,
     # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный)
