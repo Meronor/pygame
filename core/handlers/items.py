@@ -2,12 +2,14 @@ import pygame
 from core.data.constant import hW, hH
 
 
-# класс всех объектов на экране
+# Класс всех объектов на экране
 class Object(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, all_sprites):
         super().__init__()
+        self.all_sprites = all_sprites
+        all_sprites.add(self)
         self.cords = ()
-        # начальные корды
+        # Начальные корды
         self.x = 0
         self.y = 0
 
@@ -25,15 +27,17 @@ class Object(pygame.sprite.Sprite):
         self.rect.y = y
 
 
-# класс перса
+# Класс перса
 class Hero(Object):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, all_sprites):
+        super().__init__(all_sprites)
+        self.all_sprites = all_sprites
+        all_sprites.add(self)
         self.cords = ()
-        # начальные корды
+        # Начальные корды
         self.x = 0
         self.y = 0
-        # повернут ли герой
+        # Повернут ли герой
         self.f = False
 
     def __call__(self, screen, x, y):
@@ -80,8 +84,8 @@ class Hero(Object):
         self.set_rect(sx, sy)
         return (sx, sy) == (0, 0)
 
-    # идем вниз или вверх до тех пор,
-    # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный)
+    # Идем вниз или вверх до тех пор,
+    # Пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный)
     # НЕ РАБОТАЕТ при обходе вверх!
     def overcome_step(self, pixels, dx, dy):
         if pixels[self.centralX() + dx, self.centralY()] != 0:
@@ -90,7 +94,7 @@ class Hero(Object):
         else:
             return True
 
-    # координаты точки отсчета героя
+    # Координаты точки отсчета героя
     def centralX(self):
         return self.rect.x + hW
 
@@ -98,11 +102,12 @@ class Hero(Object):
         return self.rect.y + hH
 
 
-# класс предметов
+# Класс предметов
 class Entity(Object):
     def __init__(self, all_sprites, visible):
-        super().__init__()
+        super().__init__(all_sprites)
         self.all_sprites = all_sprites
+        all_sprites.add(self)
         self.size = (100, 100)
         self.is_visible = visible
 
@@ -113,9 +118,9 @@ class Entity(Object):
         return self.is_visible
 
     def pick_up(self, mouse_cords, hero_cords):
-        # проверка, находится ли курсор на энтити и как далеко находится герой
-        if (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
-            and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
+        # Проверка, находится ли курсор на энтити и как далеко находится герой
+        if self.is_visible and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
+                                  and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
                 and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
             self.disappear()
