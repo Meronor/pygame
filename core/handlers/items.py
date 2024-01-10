@@ -78,7 +78,7 @@ class Hero(Object):
     def next_step(self, cords, pixels):
         sx, sy = self.set_diff(cords, pixels)
         self.set_rect(sx, sy)
-        return (sx, sy) == (0, 0)
+        return sx, sy
 
     # идем вниз или вверх до тех пор,
     # пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный)
@@ -100,13 +100,24 @@ class Hero(Object):
 
 # класс предметов
 class Entity(Object):
-    def __init__(self):
+    def __init__(self, all_sprites, visible):
         super().__init__()
-        self.cords = ()
-        self.f = False
+        self.all_sprites = all_sprites
+        self.size = (100, 100)
+        self.is_visible = visible
 
-    def __call__(self, screen, x, y):
-        self.x += x
-        self.y += y
+    def disappear(self):
+        self.is_visible = False
 
-        self.cords = (self.x, self.y)
+    def visible(self):
+        return self.is_visible
+
+    def pick_up(self, mouse_cords, hero_cords):
+        # проверка, находится ли курсор на энтити и как далеко находится герой
+        if (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
+            and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
+                and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
+                     or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
+            self.disappear()
+            self.all_sprites.remove(self)
+            print('clicked')
