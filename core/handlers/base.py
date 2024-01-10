@@ -23,25 +23,31 @@ def screen_init(pygame):
 
     all_sprites = pygame.sprite.Group()
 
-    # Растянутый задний фон в ч/б (границы ходьбы) преобразуем в PixelArray
-    wb_bg_image = load_image("wb_backround.jpg")
-    pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
-    return screen, pixels, all_sprites, screen_w, screen_h
-
-
-# Добавляем объекты
-def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Получаем и растягиваем фон
     bg_image = "backround.jpg"
-    bg = Object()
+    bg = Object(all_sprites)
     bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
     bg.set_rect(0, 0)
 
+    # Растянутый задний фон в ч/б (границы ходьбы) преобразуем в PixelArray
+    wb_bg_image = load_image("wb_backround.jpg")
+    pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
+    return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h
+
+
+# Добавляем объекты
+def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
-    # Первый объект Hero
-    hero = Hero()
+    # Первый объект
+    apple = Entity(all_sprites, True)
+    apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
+    apple.rect = apple.image.get_rect()
+    apple.set_rect(250, 800)
+
+    # Второй объект !!!HERO всегда последний!!!
+    hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
     hero.rect = hero.image.get_rect()
@@ -49,22 +55,12 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
-    # Второй объект
-    apple = Entity(all_sprites, True)
-    apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    apple.rect = apple.image.get_rect()
-    apple.set_rect(250, 800)
-
     # Возврат героя и списка всех objects
-    return hero, bg, bg_image, [apple]
+    return hero, [apple]
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
-def game_init(screen, hero, bg, all_sprites, objects, screen_w, screen_h):
-    all_sprites.add(bg)
-    for i in objects:
-        all_sprites.add(i)
-    all_sprites.add(hero)
+def game_init(screen, all_sprites, screen_w, screen_h):
     all_sprites.draw(screen)
 
     clock = pygame.time.Clock()
@@ -176,14 +172,14 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock):
 
 def game(pygame):
     # Конфигурация экрана
-    screen, pixels, all_sprites, screen_w, screen_h = screen_init(pygame)
+    screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h = screen_init(pygame)
 
     # Получение героя, фон, картинку фона, остальные объекты в списке
-    hero, bg, bg_image, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
+    hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy = \
-        game_init(screen, hero, bg, all_sprites, objects, screen_w, screen_h)
+        game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
         running, cords, bg_image, pixels = event_handling(pygame.event.get(), hero, bg, bg_image, objects, pixels,

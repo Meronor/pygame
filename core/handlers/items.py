@@ -4,8 +4,10 @@ from core.data.constant import hW, hH
 
 # Класс всех объектов на экране
 class Object(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, all_sprites):
         super().__init__()
+        self.all_sprites = all_sprites
+        all_sprites.add(self)
         self.cords = ()
         # Начальные корды
         self.x = 0
@@ -27,8 +29,10 @@ class Object(pygame.sprite.Sprite):
 
 # Класс перса
 class Hero(Object):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, all_sprites):
+        super().__init__(all_sprites)
+        self.all_sprites = all_sprites
+        all_sprites.add(self)
         self.cords = ()
         # Начальные корды
         self.x = 0
@@ -101,8 +105,9 @@ class Hero(Object):
 # Класс предметов
 class Entity(Object):
     def __init__(self, all_sprites, visible):
-        super().__init__()
+        super().__init__(all_sprites)
         self.all_sprites = all_sprites
+        all_sprites.add(self)
         self.size = (100, 100)
         self.is_visible = visible
 
@@ -114,7 +119,7 @@ class Entity(Object):
 
     def pick_up(self, mouse_cords, hero_cords):
         # Проверка, находится ли курсор на энтити и как далеко находится герой
-        if self.is_visible() and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
+        if self.is_visible and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
                                   and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
                 and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
