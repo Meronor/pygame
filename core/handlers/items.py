@@ -1,8 +1,5 @@
-import os
-
 import pygame
 from core.data.constant import hW, hH
-from core.handlers.base import load_image
 
 
 # класс всех объектов на экране
@@ -103,21 +100,11 @@ class Hero(Object):
 
 # класс предметов
 class Entity(Object):
-    def __init__(self, x, y, visible):
+    def __init__(self, all_sprites, visible):
         super().__init__()
-        self.x = x
-        self.y = y
+        self.all_sprites = all_sprites
         self.size = (100, 100)
-        self.cords = (self.x, self.y)
         self.is_visible = visible
-
-
-    def __call__(self, screen, x, y):
-        self.x += x
-        self.y += y
-
-        self.cords = (self.x, self.y)
-
 
     def disappear(self):
         self.is_visible = False
@@ -127,8 +114,10 @@ class Entity(Object):
 
     def pick_up(self, mouse_cords, hero_cords):
         # проверка, находится ли курсор на энтити и как далеко находится герой
-        if (self.x <= mouse_cords[0] <= self.x + self.size[0] and self.y <= mouse_cords[1] <= self.y + self.size[1])\
-                and (0 <= self.x - hero_cords[0] <= 50 or 0 >= (self.x + self.size[0]) - hero_cords[0] >= -50):
-
+        if (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
+            and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
+                and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
+                     or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
             self.disappear()
+            self.all_sprites.remove(self)
             print('clicked')

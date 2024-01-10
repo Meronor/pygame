@@ -35,7 +35,7 @@ def corners(pos1, pos2):
         return 0, 0
 
 
-def event_handling(events, hero, bg, bg_image, pixels, cords, screen_w, screen_h):
+def event_handling(events, all_sprites, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h):
     for event in events:
         # выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -51,6 +51,10 @@ def event_handling(events, hero, bg, bg_image, pixels, cords, screen_w, screen_h
             # новые требуемые координаты героя
             bg_image, pixels = background(hero, bg, bg_image, pixels, event.pos, screen_w, screen_h)
             hero.need_rotate(event.pos)
+            # проверяем, можно ли подобрать предмет, если да, то подбираем
+            for i in objects:
+                if i.visible():
+                    i.pick_up(event.pos, hero.cords)
             return True, event.pos, bg_image, pixels
     return True, cords, bg_image, pixels
 
@@ -94,7 +98,7 @@ def screen_init(pygame):
     return screen, pixels, all_sprites, screen_w, screen_h
 
 
-def objects_init(pygame, screen_w, screen_h):
+def objects_init(pygame, all_sprites, screen_w, screen_h):
     # получаем и растягиваем фон
     bg_image = "backround.jpg"
     bg = Object()
@@ -114,10 +118,10 @@ def objects_init(pygame, screen_w, screen_h):
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Второй объект
-    apple = Entity()
+    apple = Entity(all_sprites, True)
     apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
     apple.rect = apple.image.get_rect()
-    apple.set_rect(250, 250)
+    apple.set_rect(250, 800)
 
     # Возврат героя и списка всех objects
     return hero, bg, bg_image, [apple]
@@ -185,14 +189,16 @@ def game(pygame):
     screen, pixels, all_sprites, screen_w, screen_h = screen_init(pygame)
 
     # Получение всех героев в кортеже
-    hero, bg, bg_image, objects = objects_init(pygame, screen_w, screen_h)
+    hero, bg, bg_image, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy = \
         game_init(screen, hero, bg, all_sprites, objects, screen_w, screen_h)
 
     while running:
-        running, cords, bg_image, pixels = event_handling(pygame.event.get(), hero, bg, bg_image, pixels, cords,
+        running, cords, bg_image, pixels = event_handling(pygame.event.get(), all_sprites, hero, bg, bg_image, objects,
+                                                          pixels,
+                                                          cords,
                                                           screen_w, screen_h)
         barrier, isImpasse, dx, dy = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy)
 
