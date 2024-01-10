@@ -8,79 +8,6 @@ from core.handlers.items import Hero, Entity, Object
 from core.data.constant import dS, tk
 
 
-def load_image(name):
-    fullname = os.path.join('core/data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    return image
-
-
-# Сложно, главное, что работает
-def corners(pos1, pos2):
-    if pos2[0] - pos1[0] <= 0 > pos2[1] - pos1[1]:
-        return -1, 1
-    elif pos2[0] - pos1[0] <= 0 < pos2[1] - pos1[1]:
-        return -1, 1
-    elif pos2[0] - pos1[0] >= 0 > pos2[1] - pos1[1]:
-        return 1, 1
-    elif pos2[0] - pos1[0] >= 0 < pos2[1] - pos1[1]:
-        return 1, 1
-    elif pos2[0] - pos1[0] < 0 == pos2[1] - pos1[1]:
-        return -1, 1
-    elif pos2[0] - pos1[0] > 0 == pos2[1] - pos1[1]:
-        return 1, 1
-    else:
-        return 0, 0
-
-
-# Обработка клика
-def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h):
-    for event in events:
-        # Выход из программы при нажатии на крестик
-        if event.type == pygame.QUIT:
-            return False, cords, bg_image, pixels
-
-        # Выход из программы по клавише Esc
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                return False, cords, bg_image, pixels
-
-        # Проверка получения новых координат для героя
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            # Новые требуемые координаты героя
-            bg_image, pixels = background(hero, bg, bg_image, pixels, event.pos, screen_w, screen_h)
-            hero.need_rotate(event.pos)
-            # Проверяем, можно ли подобрать предмет, если да, то подбираем
-            for i in objects:
-                if i.visible():
-                    i.pick_up(event.pos, hero.cords)
-            return True, event.pos, bg_image, pixels
-    return True, cords, bg_image, pixels
-
-
-# Меняем фон
-def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h):
-    if (pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and
-            bg_image != "background_river.jpg"):
-        bg_image = "background_river.jpg"
-        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
-        wb_bg_image = pygame.transform.scale(load_image("wb_background_river.jpg"), (screen_w, screen_h))
-        pixels = pygame.PixelArray(wb_bg_image)
-        hero.change_rect(screen_w * 0.85, screen_h * 0.75)
-        return bg_image, pixels
-    if (pixels[cords] == 254 and hero.get_cords()[0] > screen_w * 0.7 and
-            bg_image != "backround.jpg"):
-        bg_image = "backround.jpg"
-        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
-        wb_bg_image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
-        pixels = pygame.PixelArray(wb_bg_image)
-        hero.change_rect(screen_w * 0.01, screen_h * 0.75)
-        return bg_image, pixels
-    return bg_image, pixels
-
-
 # Первоначальная загрузка окна
 def screen_init(pygame):
     # Получаем размер экрана
@@ -153,6 +80,61 @@ def game_init(screen, hero, bg, all_sprites, objects, screen_w, screen_h):
     return running, isStep, isImpasse, clock, cords, dx, dy
 
 
+# Обработка клика
+def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h):
+    for event in events:
+        # Выход из программы при нажатии на крестик
+        if event.type == pygame.QUIT:
+            return False, cords, bg_image, pixels
+
+        # Выход из программы по клавише Esc
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                return False, cords, bg_image, pixels
+
+        # Проверка получения новых координат для героя
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # Новые требуемые координаты героя
+            bg_image, pixels = background(hero, bg, bg_image, pixels, event.pos, screen_w, screen_h)
+            hero.need_rotate(event.pos)
+            # Проверяем, можно ли подобрать предмет, если да, то подбираем
+            for i in objects:
+                # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
+                i.pick_up(event.pos, hero.cords)
+            return True, event.pos, bg_image, pixels
+    return True, cords, bg_image, pixels
+
+
+# Меняем фон
+def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h):
+    # Если нажали на красный цвет, и персонаж находится недалеко от бортика, выбираем соответствующий фон
+    if (pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and
+            bg_image != "background_river.jpg"):
+        bg_image = "background_river.jpg"
+        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+
+        wb_bg_image = pygame.transform.scale(load_image("wb_background_river.jpg"), (screen_w, screen_h))
+        pixels = pygame.PixelArray(wb_bg_image)
+
+        # Устанавливаем место героя
+        hero.change_rect(screen_w * 0.85, screen_h * 0.75)
+
+        return bg_image, pixels
+
+    if (pixels[cords] == 254 and hero.get_cords()[0] > screen_w * 0.7 and
+            bg_image != "backround.jpg"):
+        bg_image = "backround.jpg"
+        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+
+        wb_bg_image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
+        pixels = pygame.PixelArray(wb_bg_image)
+
+        hero.change_rect(screen_w * 0.01, screen_h * 0.75)
+
+        return bg_image, pixels
+    return bg_image, pixels
+
+
 # Функция обхода препятствий
 def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
@@ -172,7 +154,7 @@ def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy):
                 # В corners проверяем различные ситуации, когда обходить надо по разному
                 dx, dy = corners((hero.centralX(), hero.centralY()), cords)
 
-            # Меняем корды героя на dx, dy, если возвращается True, мы обошли прпятствие,
+            # Меняем корды героя на dx, dy, если возвращается True, мы обошли препятствие,
             # Иначе повторяем код со следующим тиком
             barrier = hero.overcome_step(pixels, dx, dy)
     return barrier, isImpasse, dx, dy
@@ -209,3 +191,30 @@ def game(pygame):
         barrier, isImpasse, dx, dy = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy)
 
         game_update(pygame, screen, all_sprites, hero, cords, clock)
+
+
+def load_image(name):
+    fullname = os.path.join('core/data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    return image
+
+
+# Сложно, главное, что работает
+def corners(pos1, pos2):
+    if pos2[0] - pos1[0] <= 0 > pos2[1] - pos1[1]:
+        return -1, 1
+    elif pos2[0] - pos1[0] <= 0 < pos2[1] - pos1[1]:
+        return -1, 1
+    elif pos2[0] - pos1[0] >= 0 > pos2[1] - pos1[1]:
+        return 1, 1
+    elif pos2[0] - pos1[0] >= 0 < pos2[1] - pos1[1]:
+        return 1, 1
+    elif pos2[0] - pos1[0] < 0 == pos2[1] - pos1[1]:
+        return -1, 1
+    elif pos2[0] - pos1[0] > 0 == pos2[1] - pos1[1]:
+        return 1, 1
+    else:
+        return 0, 0
