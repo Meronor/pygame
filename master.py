@@ -1,6 +1,6 @@
 import pygame
 
-from core.handlers.base import corners, screen_init, objects_init, game_init, event_handling
+from core.handlers.base import corners, screen_init, objects_init, game_init, event_handling, game_update
 from core.handlers.items import Hero, Object, Entity
 from core.data.constant import tk, dS
 
@@ -43,13 +43,7 @@ def main():
                 # иначе повторяем код со следующим тиком
                 barrier = hero.overcome_step(pixels, dx, dy)
 
-        hero.need_rotate(cords)
-
-        all_sprites.draw(screen)
-
-        clock.tick(tk)
-
-        pygame.display.flip()
+        game_update(pygame, screen,all_sprites, hero, cords, clock)
 
     pygame.quit()
 

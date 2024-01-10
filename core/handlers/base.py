@@ -5,7 +5,7 @@ import pygame
 # Импорт объектов-героев
 from core.handlers.items import Hero, Entity, Object
 # Получение констант из конфигурации
-from core.data.constant import dS
+from core.data.constant import dS, tk
 
 
 def load_image(name):
@@ -131,10 +131,22 @@ def game_init(screen, hero, bg, all_sprites, objects, screen_w, screen_h):
     all_sprites.draw(screen)
 
     clock = pygame.time.Clock()
-           
+
     # isStep = False - маркер приостаноки, т. е. требуется обход препятствия (текущая пиксела не валидная)
     isStep = True
     # новые требуемые координаты героя совпадают с собственными координатами героя
     cords = (screen_w * 0.75, screen_h * 0.75)
     running = True
     return running, isStep, clock, cords
+
+
+def game_update(pygame, screen, all_sprites, hero, cords, clock):
+    # проверка необходимости перевернуть героя
+    hero.need_rotate(cords)
+
+    all_sprites.draw(screen)
+
+    clock.tick(tk)
+
+    # Отображение новых изменений (перерисовка)
+    pygame.display.flip()
