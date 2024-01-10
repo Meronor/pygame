@@ -134,10 +134,37 @@ def game_init(screen, hero, bg, all_sprites, objects, screen_w, screen_h):
 
     # isStep = False - маркер приостаноки, т. е. требуется обход препятствия (текущая пиксела не валидная)
     isStep = True
+    # isImpasse = True - маркер начала обхода препятствия (текущая пиксела не валидная)
+    isImpasse = False
     # новые требуемые координаты героя совпадают с собственными координатами героя
     cords = (screen_w * 0.75, screen_h * 0.75)
     running = True
-    return running, isStep, clock, cords
+    dx, dy = 0, 0
+    return running, isStep, isImpasse, clock, cords, dx, dy
+
+
+def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy):
+    # смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
+    if pixels[cords] == 0 and hero.need_step(cords):
+        # меняем корды героя, если хоть одна отличается от кордов клика
+
+        # проверяем, обходит ли герой в данный момент препятствие
+        if barrier:
+            # делаем шаг
+            isImpasse = hero.next_step(cords, pixels)
+
+        # ВАЖНО! если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
+        # то наш перс стоит в тупике, ниже код обхода этого тупика
+        if isImpasse:
+            # если barrier = False, наш герой уже обходит препятствие
+            if barrier:
+                # в corners проверяем различные ситуации, когда обходить надо по разному
+                dx, dy = corners((hero.centralX(), hero.centralY()), cords)
+
+            # меняем корды героя на dx, dy, если возвращается True, мы обошли прпятствие,
+            # иначе повторяем код со следующим тиком
+            barrier = hero.overcome_step(pixels, dx, dy)
+    return barrier, isImpasse, dx, dy
 
 
 def game_update(pygame, screen, all_sprites, hero, cords, clock):
