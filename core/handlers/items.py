@@ -104,12 +104,14 @@ class Hero(Object):
 
 # Класс предметов
 class Entity(Object):
-    def __init__(self, all_sprites, visible):
+    def __init__(self, all_sprites, visible, bg):
         super().__init__(all_sprites)
         self.all_sprites = all_sprites
         all_sprites.add(self)
         self.size = (100, 100)
         self.is_visible = visible
+        self.bg = bg
+        self.picked_up = False
 
     def disappear(self):
         self.is_visible = False
