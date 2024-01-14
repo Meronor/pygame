@@ -16,7 +16,7 @@ def screen_init(pygame):
     screen_h = screen_info.current_h
 
     # Растягиваем окно во весь экран
-    screen = pygame.display.set_mode((screen_w, screen_h), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((screen_w, screen_h))
 
     # Устанавливаем название окна
     pygame.display.set_caption('Game')
@@ -41,7 +41,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    apple = Entity(all_sprites, True)
+    apple = Entity(all_sprites, True, 'backround.jpg')
     apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
     apple.rect = apple.image.get_rect()
     apple.set_rect(250, 800)
@@ -52,11 +52,14 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
     hero.rect = hero.image.get_rect()
 
+    #objects
+    objects = [apple]
+
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return hero, [apple]
+    return hero, objects
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -77,7 +80,7 @@ def game_init(screen, all_sprites, screen_w, screen_h):
 
 
 # Обработка клика
-def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h):
+def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h, all_sprites):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -97,6 +100,13 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w,
             for i in objects:
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
                 i.pick_up(event.pos, hero.cords)
+                i.bg_check(bg_image)
+                if i.visible() == False and i in all_sprites:
+                    all_sprites.remove(i)
+                elif i.visible() == True and i not in all_sprites:
+                    all_sprites.add(i)
+                elif i.visible() and i in all_sprites:
+                    all_sprites.add(i)
             return True, event.pos, bg_image, pixels
     return True, cords, bg_image, pixels
 
@@ -183,7 +193,7 @@ def game(pygame):
 
     while running:
         running, cords, bg_image, pixels = event_handling(pygame.event.get(), hero, bg, bg_image, objects, pixels,
-                                                          cords, screen_w, screen_h)
+                                                          cords, screen_w, screen_h, all_sprites)
         barrier, isImpasse, dx, dy = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy)
 
         game_update(pygame, screen, all_sprites, hero, cords, clock)

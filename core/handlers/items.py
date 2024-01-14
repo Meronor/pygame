@@ -113,9 +113,6 @@ class Entity(Object):
         self.bg = bg
         self.picked_up = False
 
-    def disappear(self):
-        self.is_visible = False
-
     def visible(self):
         return self.is_visible
 
@@ -125,6 +122,14 @@ class Entity(Object):
                                   and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
                 and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
-            self.disappear()
-            self.all_sprites.remove(self)
+            self.is_visible = False
+            self.picked_up = True
             print('clicked')
+
+    def bg_check(self, cur_bg):
+        if self.bg != cur_bg:
+            self.is_visible = False
+        elif self.bg == cur_bg and self.picked_up == False:
+            self.is_visible = True
+        elif self.bg == cur_bg and self.picked_up == True:
+            self.is_visible = False
