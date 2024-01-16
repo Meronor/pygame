@@ -42,10 +42,10 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    apple = Entity(all_sprites, True)
-    apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    apple.rect = apple.image.get_rect()
-    apple.set_rect(250, 800)
+    #apple = Entity(all_sprites, True)
+    #apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
+    #apple.rect = apple.image.get_rect()
+    #apple.set_rect(250, 800)
 
     # Второй объект !!!HERO всегда последний!!!
     hero = Hero(all_sprites)
@@ -57,7 +57,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return hero, [apple]
+    return hero, []
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -96,7 +96,7 @@ def game_init(screen, all_sprites, screen_w, screen_h):
 
 
 # Обработка клика
-def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h):
+def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h, count):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -110,7 +110,7 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w,
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Новые требуемые координаты героя
-            bg_image, pixels = background(hero, bg, bg_image, pixels, event.pos, screen_w, screen_h)
+            bg_image, pixels = background(hero, bg, bg_image, pixels, event.pos, screen_w, screen_h, count)
             hero.need_rotate(event.pos)
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for i in objects:
@@ -121,11 +121,10 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w,
 
 
 # Меняем фон
-def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h):
+def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h, count):
     # Если нажали на красный цвет, и персонаж находится недалеко от бортика, выбираем соответствующий фон
-    if (pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and
-            bg_image != "background_river.jpg"):
-        bg_image = "background_river.jpg"
+    if pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and 'background_river' not in bg_image:
+        bg_image = f"river/background_river{count // 20}.PNG"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
         wb_bg_image = pygame.transform.scale(load_image("wb_background_river.jpg"), (screen_w, screen_h))
@@ -208,14 +207,14 @@ def game(pygame):
     hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
-    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv = \
+    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv= \
         game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
-        animation(hero, bg, bg_image, fps, spFOX, spRiv, ccount, screen_w, screen_h)
+        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image)
 
         running, cords, bg_image, pixels = event_handling(pygame.event.get(), hero, bg, bg_image, objects, pixels,
-                                                          cords, screen_w, screen_h)
+                                                          cords, screen_w, screen_h, count)
         barrier, isImpasse, dx, dy, count = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy, count)
 
         ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
@@ -234,16 +233,17 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
     return ccount, cccount
 
 
-def animation(hero, bg, bg_image, fps, spFOX, spRiv, ccount, screen_w, screen_h):
+def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image):
     fps += 1
     if fps == 120:
         fps = 0
-    if bg_image == "background_river.jpg":
+    if 'background_river' in bg_image and fps % 40 == 0:
         bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
     if hero.is_rotate():
         hero.image = pygame.transform.scale(spFOX[ccount % len(spFOX)], (dS, dS))
     else:
         hero.image = pygame.transform.scale(pygame.transform.flip(spFOX[ccount % len(spFOX)], True, False), (dS, dS))
+    return fps
 
 
 def music_play(key):

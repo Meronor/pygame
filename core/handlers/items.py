@@ -128,4 +128,3 @@ class Entity(Object):
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
             self.disappear()
             self.all_sprites.remove(self)
-            print('clicked')
