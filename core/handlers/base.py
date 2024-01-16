@@ -33,6 +33,7 @@ def screen_init(pygame):
     # Растянутый задний фон в ч/б (границы ходьбы) преобразуем в PixelArray
     wb_bg_image = load_image("wb_backround.jpg")
     pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
+
     return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h
 
 
@@ -63,6 +64,10 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
 def game_init(screen, all_sprites, screen_w, screen_h):
     all_sprites.draw(screen)
 
+    # Главная музыка, ее воспроизведение
+    pygame.mixer.music.load("core/data/musc/loc_sound.mp3")
+    pygame.mixer.music.play(-1)
+
     clock = pygame.time.Clock()
 
     # isStep = False - маркер приостаноки, т. е. требуется обход препятствия (текущая пиксела не валидная)
@@ -73,7 +78,21 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     cords = (screen_w * 0.75, screen_h * 0.75)
     running = True
     dx, dy = 0, 0
-    return running, isStep, isImpasse, clock, cords, dx, dy
+
+    # что то непонятное
+    fps = 0
+
+    # какие то счетчики
+    count = 0
+    ccount = 0
+    cccount = 0
+    speccou = 0
+
+    # Спрайты для анимации
+    spFOX = [load_image(f"movement/move{x}.PNG") for x in range(30)]
+    spRiv = [load_image(f"river/background_river{y}.PNG") for y in range(3)]
+
+    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv
 
 
 # Обработка клика
@@ -115,6 +134,9 @@ def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h):
         # Устанавливаем место героя
         hero.change_rect(screen_w * 0.85, screen_h * 0.75)
 
+        # Звук течения реки
+        music_play('river')
+
         return bg_image, pixels
 
     if (pixels[cords] == 254 and hero.get_cords()[0] > screen_w * 0.7 and
@@ -127,15 +149,23 @@ def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h):
 
         hero.change_rect(screen_w * 0.01, screen_h * 0.75)
 
+        # Звук главного меню
+        music_play('main')
+
         return bg_image, pixels
     return bg_image, pixels
 
 
 # Функция обхода препятствий
-def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy):
+def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy, count):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
     if pixels[cords] == 0 and hero.need_step(cords):
         # Меняем корды героя, если хоть одна отличается от кордов клика
+
+        # Обновляем счетчик на 60
+        count += 1
+        if count == 60:
+            count = 0
 
         # Проверяем, обходит ли герой в данный момент препятствие
         if barrier:
@@ -153,7 +183,7 @@ def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy):
             # Меняем корды героя на dx, dy, если возвращается True, мы обошли препятствие,
             # Иначе повторяем код со следующим тиком
             barrier = hero.overcome_step(pixels, dx, dy)
-    return barrier, isImpasse, dx, dy
+    return barrier, isImpasse, dx, dy, count
 
 
 # Переход на новый тик
@@ -178,15 +208,56 @@ def game(pygame):
     hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
-    running, barrier, isImpasse, clock, cords, dx, dy = \
+    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv = \
         game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
+        animation(hero, bg, bg_image, fps, spFOX, spRiv, ccount, screen_w, screen_h)
+
         running, cords, bg_image, pixels = event_handling(pygame.event.get(), hero, bg, bg_image, objects, pixels,
                                                           cords, screen_w, screen_h)
-        barrier, isImpasse, dx, dy = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy)
+        barrier, isImpasse, dx, dy, count = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy, count)
+
+        ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
 
         game_update(pygame, screen, all_sprites, hero, cords, clock)
+
+
+def update_anim_counters(screen, all_sprites, count, ccount, cccount):
+    # Какие то действия со счетсчиками
+    if count % 4 == 0 and count != 0:
+        all_sprites.draw(screen)
+        ccount += 1
+        if ccount == 15 and cccount == 0:
+            cccount = 1
+            ccount = 0
+    return ccount, cccount
+
+
+def animation(hero, bg, bg_image, fps, spFOX, spRiv, ccount, screen_w, screen_h):
+    fps += 1
+    if fps == 120:
+        fps = 0
+    if bg_image == "background_river.jpg":
+        bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
+    if hero.is_rotate():
+        hero.image = pygame.transform.scale(spFOX[ccount % len(spFOX)], (dS, dS))
+    else:
+        hero.image = pygame.transform.scale(pygame.transform.flip(spFOX[ccount % len(spFOX)], True, False), (dS, dS))
+
+
+def music_play(key):
+    riversound = pygame.mixer.Sound("core/data/musc/ivsound.wav")
+    icesound = pygame.mixer.Sound("core/data/musc/ices.wav")
+    if key == 'river':
+        icesound.stop()
+        riversound.play()
+        riversound.set_volume(0.5)
+    elif key == 'ice':
+        riversound.stop()
+    elif key == 'main':
+        icesound.stop()
+        riversound.stop()
 
 
 def load_image(name):

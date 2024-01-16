@@ -104,13 +104,14 @@ class Hero(Object):
 
 # Класс предметов
 class Entity(Object):
-    def __init__(self, all_sprites, visible, bg):
+    def __init__(self, all_sprites, visible):
         super().__init__(all_sprites)
         self.all_sprites = all_sprites
         all_sprites.add(self)
         self.size = (100, 100)
         self.is_visible = visible
-        self.bg = bg
+        # На каком фоне показывается Object
+        # self.bg = bg
         self.picked_up = False
 
     def disappear(self):
