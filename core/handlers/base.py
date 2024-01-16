@@ -31,7 +31,7 @@ def screen_init(pygame):
     bg.set_rect(0, 0)
 
     # Растянутый задний фон в ч/б (границы ходьбы) преобразуем в PixelArray
-    wb_bg_image = load_image("wb_backround.jpg")
+    wb_bg_image = load_image("wb_background.jpg")
     pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
 
     return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h
@@ -123,7 +123,8 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w,
 # Меняем фон
 def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h, count):
     # Если нажали на красный цвет, и персонаж находится недалеко от бортика, выбираем соответствующий фон
-    if pixels[cords] == 254 and hero.get_cords()[0] < screen_w * 0.2 and 'background_river' not in bg_image:
+    print(pixels[cords])
+    if pixels[cords] == 66047 and hero.get_cords()[0] < screen_w * 0.2 and 'background_river' not in bg_image:
         bg_image = f"river/background_river{count // 20}.PNG"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -143,7 +144,37 @@ def background(hero, bg, bg_image, pixels, cords, screen_w, screen_h, count):
         bg_image = "backround.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
-        wb_bg_image = pygame.transform.scale(load_image("wb_backround.jpg"), (screen_w, screen_h))
+        wb_bg_image = pygame.transform.scale(load_image("wb_background.jpg"), (screen_w, screen_h))
+        pixels = pygame.PixelArray(wb_bg_image)
+
+        hero.change_rect(screen_w * 0.01, screen_h * 0.75)
+
+        # Звук главного меню
+        music_play('main')
+
+        return bg_image, pixels
+
+    if (pixels[cords] == 65515 and #hero.get_cords()[0] > screen_w * 0.7 and
+            bg_image != "forest.PNG"):
+        bg_image = "forest.PNG"
+        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+
+        wb_bg_image = pygame.transform.scale(load_image("wb_background.jpg"), (screen_w, screen_h))
+        pixels = pygame.PixelArray(wb_bg_image)
+
+        hero.change_rect(screen_w * 0.01, screen_h * 0.75)
+
+        # Звук главного меню
+        music_play('main')
+
+        return bg_image, pixels
+
+    if (pixels[cords] == 130816 and #hero.get_cords()[0] > screen_w * 0.7 and
+            bg_image != "home.PNG"):
+        bg_image = "home.PNG"
+        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+
+        wb_bg_image = pygame.transform.scale(load_image("wb_background.jpg"), (screen_w, screen_h))
         pixels = pygame.PixelArray(wb_bg_image)
 
         hero.change_rect(screen_w * 0.01, screen_h * 0.75)
