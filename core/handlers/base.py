@@ -44,7 +44,12 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     apple = Entity(all_sprites, True, 'backround.jpg')
     apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
     apple.rect = apple.image.get_rect()
-    apple.set_rect(250, 800)
+    apple.set_rect(500, 800)
+
+    snowball = Entity(all_sprites, True, 'background_river.jpg')
+    snowball.image = pygame.transform.scale(load_image("snowball.png"), (100, 100))
+    snowball.rect = snowball.image.get_rect()
+    snowball.set_rect(1000, 800)
 
     # Второй объект !!!HERO всегда последний!!!
     hero = Hero(all_sprites)
@@ -52,8 +57,8 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
     hero.rect = hero.image.get_rect()
 
-    #objects
-    objects = [apple]
+    # objects
+    objects = [apple, snowball]
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
@@ -63,7 +68,16 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
-def game_init(screen, all_sprites, screen_w, screen_h):
+def game_init(screen, all_sprites, screen_w, screen_h, objects):
+    for i in objects:
+        # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
+        i.bg_check('backround.jpg')
+        if i.visible() == False and i in all_sprites:
+            all_sprites.remove(i)
+        elif i.visible() == True and i not in all_sprites:
+            all_sprites.add(i)
+        elif i.visible() and i in all_sprites:
+            all_sprites.add(i)
     all_sprites.draw(screen)
 
     clock = pygame.time.Clock()
@@ -74,13 +88,14 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     isImpasse = False
     # Новые требуемые координаты героя совпадают с собственными координатами героя
     cords = (screen_w * 0.75, screen_h * 0.75)
+    inventory = []
     running = True
     dx, dy = 0, 0
-    return running, isStep, isImpasse, clock, cords, dx, dy
+    return running, isStep, isImpasse, clock, cords, dx, dy, inventory
 
 
 # Обработка клика
-def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h, all_sprites):
+def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w, screen_h, all_sprites, inventory):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -99,7 +114,7 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w,
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for i in objects:
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-                i.pick_up(event.pos, hero.cords)
+                i.pick_up(event.pos, hero.cords, inventory)
                 i.bg_check(bg_image)
                 if i.visible() == False and i in all_sprites:
                     all_sprites.remove(i)
@@ -167,12 +182,17 @@ def step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy):
 
 
 # Переход на новый тик
-def game_update(pygame, screen, all_sprites, hero, cords, clock):
+def game_update(pygame, screen, all_sprites, hero, cords, clock, inventory):
     # Проверка необходимости перевернуть героя
     hero.need_rotate(cords)
 
     # Перерисовываем экран
     all_sprites.draw(screen)
+
+    if inventory:
+        for i, item in enumerate(inventory):
+            item.change_rect((i + 1) * 10 + 100 * i, 10)
+            all_sprites.add(item)
 
     clock.tick(tk)
 
@@ -188,15 +208,15 @@ def game(pygame):
     hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
-    running, barrier, isImpasse, clock, cords, dx, dy = \
-        game_init(screen, all_sprites, screen_w, screen_h)
+    running, barrier, isImpasse, clock, cords, dx, dy, inventory = \
+        game_init(screen, all_sprites, screen_w, screen_h, objects)
 
     while running:
         running, cords, bg_image, pixels = event_handling(pygame.event.get(), hero, bg, bg_image, objects, pixels,
-                                                          cords, screen_w, screen_h, all_sprites)
+                                                          cords, screen_w, screen_h, all_sprites, inventory)
         barrier, isImpasse, dx, dy = step_handling(pixels, cords, hero, barrier, isImpasse, dx, dy)
 
-        game_update(pygame, screen, all_sprites, hero, cords, clock)
+        game_update(pygame, screen, all_sprites, hero, cords, clock, inventory)
 
 
 def load_image(name):

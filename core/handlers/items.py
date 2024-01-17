@@ -25,6 +25,7 @@ class Object(pygame.sprite.Sprite):
     def change_rect(self, x, y):
         self.rect.x = x
         self.rect.y = y
+        self.cords = (self.rect.x, self.rect.y)
 
 
 # Класс перса
@@ -116,7 +117,7 @@ class Entity(Object):
     def visible(self):
         return self.is_visible
 
-    def pick_up(self, mouse_cords, hero_cords):
+    def pick_up(self, mouse_cords, hero_cords, inventory):
         # Проверка, находится ли курсор на энтити и как далеко находится герой
         if self.is_visible and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
                                   and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
@@ -124,7 +125,7 @@ class Entity(Object):
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
             self.is_visible = False
             self.picked_up = True
-            print('clicked')
+            inventory.append(self)
 
     def bg_check(self, cur_bg):
         if self.bg != cur_bg:
