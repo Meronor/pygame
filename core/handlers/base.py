@@ -41,17 +41,13 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    apple = Entity(all_sprites, True, 'backround.jpg')
-    apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    apple.rect = apple.image.get_rect()
+    apple = Entity(all_sprites, True, (100, 100),'backround.jpg', "apple.jpg")
     apple.set_rect(500, 800)
-
-    snowball = Entity(all_sprites, True, 'background_river.jpg')
-    snowball.image = pygame.transform.scale(load_image("snowball.png"), (100, 100))
-    snowball.rect = snowball.image.get_rect()
+    # Второй объект
+    snowball = Entity(all_sprites, True, (100, 100),'background_river.jpg', "snowball.png")
     snowball.set_rect(1000, 800)
 
-    # Второй объект !!!HERO всегда последний!!!
+    # !!!HERO всегда последний!!!
     hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
@@ -191,7 +187,8 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock, inventory):
 
     if inventory:
         for i, item in enumerate(inventory):
-            item.change_rect((i + 1) * 10 + 100 * i, 10)
+            item.image = pygame.transform.scale(load_image(item.item_image), (50, 50))
+            item.change_rect((i + 1) * 10 + 50 * i, 10)
             all_sprites.add(item)
 
     clock.tick(tk)

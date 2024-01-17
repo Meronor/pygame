@@ -1,5 +1,6 @@
 import pygame
 from core.data.constant import hW, hH
+import core.handlers.base
 
 
 # Класс всех объектов на экране
@@ -105,14 +106,19 @@ class Hero(Object):
 
 # Класс предметов
 class Entity(Object):
-    def __init__(self, all_sprites, visible, bg):
+    def __init__(self, all_sprites, visible, size, bg, item_image):
         super().__init__(all_sprites)
         self.all_sprites = all_sprites
         all_sprites.add(self)
-        self.size = (100, 100)
+        # задаем карткинку
+        self.item_image = item_image
+        self.size = size
+        self.const_size = size
         self.is_visible = visible
         self.bg = bg
         self.picked_up = False
+        self.image = pygame.transform.scale(core.handlers.base.load_image(item_image), self.size)
+        self.rect = self.image.get_rect()
 
     def visible(self):
         return self.is_visible
@@ -125,6 +131,7 @@ class Entity(Object):
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
             self.is_visible = False
             self.picked_up = True
+
             inventory.append(self)
 
     def bg_check(self, cur_bg):
@@ -134,3 +141,10 @@ class Entity(Object):
             self.is_visible = True
         elif self.bg == cur_bg and self.picked_up == True:
             self.is_visible = False
+
+    def place(self, bg, cords):
+        self.change_rect(cords)
+        self.picked_up = False
+        self.visible = True
+        self.size = self.const_size
+        self.bg = bg
