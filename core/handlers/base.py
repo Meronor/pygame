@@ -107,9 +107,9 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     for x in range(3):
         spCentralLoc.append(pygame.transform.scale(load_image(f"centralloc/cloc{x}.PNG"), (screen_w, screen_h)))
     for x in range(4):
-        spBluefor.append(pygame.transform.scale(load_image(f"bluefor/blf{x}.PNG"), (screen_w, screen_h)))
+        spBluefor.append(pygame.transform.scale(load_image(f"bluefor/blf{x}.jpg"), (screen_w, screen_h)))
     for x in range(3):
-        spHome.append(pygame.transform.scale(load_image(f"home/home{x}.PNG"), (screen_w, screen_h)))
+        spHome.append(pygame.transform.scale(load_image(f"home/home{x}.jpg"), (screen_w, screen_h)))
 
     return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
            spCentralLoc, spBluefor, spHome, color
@@ -222,9 +222,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
         # Обновляем счетчик на 60
         count += 1
-        print(bg_image)
         if 'forest' in bg_image or 'home' in bg_image:
-            print(cords)
             count += 1
         else:
             count += 1
@@ -320,15 +318,15 @@ def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBlu
     if 'background_river' in bg_image and fps % 40 == 0:
         if fps >= 120:
             fps = 0
-        bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
+        bg.image = spRiv[fps // 40]
     if 'forest' in bg_image and fps % 90 == 0:
         if fps >= 270:
             fps = 0
-        bg.image = pygame.transform.scale(spBluefor[fps // 90], (screen_w, screen_h))
+        bg.image = spBluefor[fps // 90]
     if 'home' in bg_image and fps % 100 == 0:
         if fps >= 300:
             fps = 0
-        bg.image = pygame.transform.scale(spHome[fps // 100], (screen_w, screen_h))
+        bg.image = spHome[fps // 100]
     if 'backg_main' in bg_image and fps % 120 == 0:
         if fps >= 360:
             fps = 0
