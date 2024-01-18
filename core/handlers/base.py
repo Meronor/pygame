@@ -52,10 +52,10 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    # apple = Entity(all_sprites, True)
-    # apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    # apple.rect = apple.image.get_rect()
-    # apple.set_rect(250, 800)
+    apple = Entity(all_sprites, True)
+    apple.image = pygame.transform.scale(load_image("snejinka.PNG"), (100, 100))
+    apple.rect = apple.image.get_rect()
+    apple.set_rect(250, 800)
 
     # Второй объект !!!HERO всегда последний!!!
     hero = Hero(all_sprites)
@@ -67,7 +67,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return hero, []
+    return hero, [apple]
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -156,7 +156,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
         pixels = pygame.PixelArray(wb_bg_image)
 
         # Устанавливаем место героя
-        hero.change_rect(screen_w * 0.85, screen_h * 0.75)
+        hero.change_rect(screen_w * 0.9, screen_h * 0.8)
 
         # Звук течения реки
         music_play('river')
@@ -165,14 +165,18 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
 
     if color == 254:
         pygame.mixer.music.set_volume(0.1)
+        bg_image_past = bg_image
         bg_image = "backgrounds/backg_main.jpg"
         bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
 
         wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background.jpg"), (screen_w, screen_h))
         pixels = pygame.PixelArray(wb_bg_image)
-
-        hero.change_rect(screen_w * 0.01, screen_h * 0.75)
-
+        if bg_image_past == 'backgrounds/forest.jpg':
+            hero.change_rect(screen_w * 0.4, screen_h * 0.7)
+        elif bg_image_past == 'river/background_river0.PNG':
+            hero.change_rect(screen_w * 0.05, screen_h * 0.75)
+        else:
+            hero.change_rect(screen_w * 0.75, screen_h * 0.75)
         # Звук главного меню
         music_play('main')
         pygame.mixer.music.set_volume(0.1)
@@ -201,7 +205,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
         wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_home.jpg"), (screen_w, screen_h))
         pixels = pygame.PixelArray(wb_bg_image)
 
-        hero.change_rect(screen_w * 0.5, screen_h * 0.75)
+        hero.change_rect(screen_w * 0.15, screen_h * 0.75)
 
         # Звук главного меню
         pygame.mixer.music.set_volume(0.0)
@@ -226,7 +230,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             count += 1
         else:
             count += 1
-        if count == 60:
+        if count == 120:
             count = 0
 
         # Проверяем, обходит ли герой в данный момент препятствие
@@ -304,7 +308,7 @@ def game(pygame):
 
 def update_anim_counters(screen, all_sprites, count, ccount, cccount):
     # Какие-то действия со счетчиками
-    if count % 4 == 0 and count != 0:
+    if count % 8 == 0 and count != 0:
         all_sprites.draw(screen)
         ccount += 1
         if ccount == 15 and cccount == 0:
