@@ -75,7 +75,16 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
-def game_init(screen, all_sprites, screen_w, screen_h):
+def game_init(screen, all_sprites, screen_w, screen_h, objects):
+    for i in objects:
+        # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
+        i.bg_check('backround.jpg')
+        if i.visible() == False and i in all_sprites:
+            all_sprites.remove(i)
+        elif i.visible() == True and i not in all_sprites:
+            all_sprites.add(i)
+        elif i.visible() and i in all_sprites:
+            all_sprites.add(i)
     all_sprites.draw(screen)
 
     # Главная музыка, ее воспроизведение
@@ -310,7 +319,7 @@ def game(pygame):
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-    spCentralLoc, spBluefor, spHome, color, inventory = game_init(screen, all_sprites, screen_w, screen_h)
+    spCentralLoc, spBluefor, spHome, color, inventory = game_init(screen, all_sprites, screen_w, screen_h, objects)
 
     while running:
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
