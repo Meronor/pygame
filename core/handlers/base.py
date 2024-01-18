@@ -116,7 +116,7 @@ def game_init(screen, all_sprites, screen_w, screen_h):
 
 
 # Обработка клика
-def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor):
+def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -128,6 +128,10 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
                 return False, cords, bg_image, pixels, color
 
         if event.type == pygame.MOUSEMOTION:
+            if pixels[event.pos] != 0 and pixels[event.pos] != 16777215:
+                cursor.image = pygame.transform.scale(load_image('hand.png'), (screen_w * 0.05, screen_h * 0.05))
+            else:
+                cursor.image = pygame.transform.scale(load_image('cursor.jpg'), (screen_w * 0.05, screen_h * 0.05))
             # изменяем положение спрайта-стрелки
             cursor.rect.topleft = event.pos
 
@@ -294,7 +298,7 @@ def game(pygame):
                         spHome)
 
         running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
-                                                                 cords, color, cursor)
+                                                                 cords, color, cursor, screen_w, screen_h)
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
                             ccount, cccount, screen_w, screen_h, color)
@@ -346,19 +350,22 @@ def music_play(key):
         homesound.stop()
         icesound.stop()
         riversound.play()
-        riversound.set_volume(0.07)
+        homesound.set_volume(0.0)
     if key == 'stop':
         homesound.stop()
+        homesound.set_volume(0.0)
     if key == 'ice':
         riversound.stop()
         homesound.stop()
+        homesound.set_volume(0.0)
     if key == 'main':
         homesound.set_volume(0)
         icesound.stop()
         riversound.stop()
+        homesound.set_volume(0.0)
     if key == 'home':
         homesound.play()
-        homesound.set_volume(0.1)
+        homesound.set_volume(0.0)
 
 
 def load_image(name):
