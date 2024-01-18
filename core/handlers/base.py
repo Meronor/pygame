@@ -136,7 +136,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
             else:
                 cursor.image = pygame.transform.scale(load_image('cursor.jpg'), (screen_w * 0.05, screen_h * 0.05))
             # изменяем положение спрайта-стрелки
-            cursor.rect.topleft = event.pos
+            cursor.rect.topleft = event.pos[0] - 20, event.pos[1] - 10
 
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
