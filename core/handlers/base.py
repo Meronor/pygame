@@ -118,6 +118,13 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, screen_w,
                     all_sprites.add(i)
                 elif i.visible() and i in all_sprites:
                     all_sprites.add(i)
+
+            if inventory:
+                for i, item in enumerate(inventory):
+                    item.image = pygame.transform.scale(load_image(item.item_image), (50, 50))
+                    item.change_rect((i + 1) * 10 + 50 * i, 10)
+                    all_sprites.add(item)
+
             return True, event.pos, bg_image, pixels
     return True, cords, bg_image, pixels
 
@@ -184,12 +191,6 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock, inventory):
 
     # Перерисовываем экран
     all_sprites.draw(screen)
-
-    if inventory:
-        for i, item in enumerate(inventory):
-            item.image = pygame.transform.scale(load_image(item.item_image), (50, 50))
-            item.change_rect((i + 1) * 10 + 50 * i, 10)
-            all_sprites.add(item)
 
     clock.tick(tk)
 
