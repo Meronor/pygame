@@ -164,6 +164,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
         return bg_image, pixels
 
     if color == 254:
+        pygame.mixer.music.set_volume(0.1)
         bg_image = "backgrounds/backg_main.jpg"
         bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
 
@@ -215,11 +216,18 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
                   cccount, screen_w, screen_h, color):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
     if pixels[cords] == 0 and hero.need_step(cords):
+
         ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
         # Меняем корды героя, если хоть одна отличается от кордов клика
 
         # Обновляем счетчик на 60
         count += 1
+        print(bg_image)
+        if 'forest' in bg_image or 'home' in bg_image:
+            print(cords)
+            count += 1
+        else:
+            count += 1
         if count == 60:
             count = 0
 
@@ -312,15 +320,15 @@ def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBlu
     if 'background_river' in bg_image and fps % 40 == 0:
         if fps >= 120:
             fps = 0
-        bg.image = spRiv[fps // 40]
-    if 'forest' in bg_image and fps % 50 == 0:
-        if fps >= 200:
+        bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
+    if 'forest' in bg_image and fps % 90 == 0:
+        if fps >= 270:
             fps = 0
-        bg.image = spBluefor[fps // 50]
-    if 'home' in bg_image and fps % 40 == 0:
-        if fps >= 120:
+        bg.image = pygame.transform.scale(spBluefor[fps // 90], (screen_w, screen_h))
+    if 'home' in bg_image and fps % 100 == 0:
+        if fps >= 300:
             fps = 0
-        bg.image = spHome[fps // 40]
+        bg.image = pygame.transform.scale(spHome[fps // 100], (screen_w, screen_h))
     if 'backg_main' in bg_image and fps % 120 == 0:
         if fps >= 360:
             fps = 0
@@ -332,10 +340,6 @@ def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBlu
     return fps
 
 
-def cursor():
-    pass
-
-
 def music_play(key):
     riversound = pygame.mixer.Sound("core/data/musc/ivsound.wav")
     icesound = pygame.mixer.Sound("core/data/musc/ices.wav")
@@ -345,9 +349,13 @@ def music_play(key):
         icesound.stop()
         riversound.play()
         riversound.set_volume(0.07)
-    elif key == 'ice':
+    if key == 'stop':
+        homesound.stop()
+    if key == 'ice':
         riversound.stop()
-    elif key == 'main':
+        homesound.stop()
+    if key == 'main':
+        homesound.set_volume(0)
         icesound.stop()
         riversound.stop()
     if key == 'home':
