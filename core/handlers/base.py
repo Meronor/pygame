@@ -29,7 +29,6 @@ def screen_init(pygame):
     bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
     bg.set_rect(0, 0)
-
     # Растянутый задний фон в ч/б (границы ходьбы) преобразуем в PixelArray
     wb_bg_image = load_image("wb_backgrounds/wb_background.jpg")
     pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
@@ -41,17 +40,19 @@ def screen_init(pygame):
 def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
-    # Первый объект
-    # apple = Entity(all_sprites, True)
-    # apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    # apple.rect = apple.image.get_rect()
-    # apple.set_rect(250, 800)
+    '''
+    apple = Entity(all_sprites, True)
+    apple.image = pygame.transform.scale(load_image("grass.PNG"), (screen_w, screen_h))
+    apple.rect = apple.image.get_rect()
+    apple.set_rect(0, 0)
+    '''
 
     # Второй объект !!!HERO всегда последний!!!
     hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
     hero.rect = hero.image.get_rect()
+    # Первый объект
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
@@ -94,8 +95,11 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     # Спрайты для анимации
     spFOX = [load_image(f"movement/move{x}.PNG") for x in range(30)]
     spRiv = [load_image(f"river/background_river{y}.PNG") for y in range(3)]
+    spCentralLoc = [load_image(f"centralloc/cloc{y}.PNG") for y in range(3)]
+    spBluefor = [load_image(f"bluefor/blf{y}.PNG") for y in range(4)]
+    spHome = [load_image(f"home/home{y}.PNG") for y in range(3)]
 
-    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, color
+    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, color
 
 
 # Обработка клика
@@ -197,6 +201,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
         # Меняем корды героя, если хоть одна отличается от кордов клика
 
         # Обновляем счетчик на 60
+        print(bg_image)
         count += 1
         if count == 60:
             count = 0
@@ -255,11 +260,11 @@ def game(pygame):
     hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
-    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, color = \
+    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, color = \
         game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
-        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image)
+        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc)
 
         running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
                                                                  cords, color)
@@ -287,12 +292,15 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
     return ccount, cccount
 
 
-def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image):
+def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc):
     fps += 1
-    if fps == 120:
+    print(fps)
+    if fps == 360:
         fps = 0
     if 'background_river' in bg_image and fps % 40 == 0:
         bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
+    if 'background' in bg_image and fps % 120 == 0:
+        bg.image = pygame.transform.scale(spCentralLoc[fps // 120], (screen_w, screen_h))
     if hero.is_rotate():
         hero.image = pygame.transform.scale(spFOX[ccount % len(spFOX)], (dS, dS))
     else:
