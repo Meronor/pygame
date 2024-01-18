@@ -34,17 +34,10 @@ def screen_init(pygame):
     wb_bg_image = load_image("wb_backgrounds/wb_start_menu.jpg")
     pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
 
-    # Меняем курсор
-    cursor_image = "cursor.jpg"
-    cursor = pygame.sprite.Sprite(all_sprites)
-
-    cursor.image = pygame.transform.scale(load_image(cursor_image), (screen_w * 0.05, screen_h * 0.05))
-    cursor.rect = cursor.image.get_rect()
-
     # скрываем системный курсор
     pygame.mouse.set_visible(False)
 
-    return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h, cursor
+    return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h
 
 
 # Добавляем объекты
@@ -52,22 +45,29 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    # apple = Entity(all_sprites, True)
-    # apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    # apple.rect = apple.image.get_rect()
-    # apple.set_rect(250, 800)
+    apple = Entity(all_sprites, True)
+    apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
+    apple.rect = apple.image.get_rect()
+    apple.set_rect(250, 800)
 
-    # Второй объект !!!HERO всегда последний!!!
+    # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
     hero.rect = hero.image.get_rect()
 
+    # !!!Курсор всегда последний!!!
+    cursor_image = "cursor.jpg"
+    cursor = pygame.sprite.Sprite(all_sprites)
+
+    cursor.image = pygame.transform.scale(load_image(cursor_image), (screen_w * 0.05, screen_h * 0.05))
+    cursor.rect = cursor.image.get_rect()
+
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return hero, []
+    return cursor, hero, [apple]
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -98,6 +98,9 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     # Какие-то счетчики
     count, ccount, cccount, speccou = 0, 0, 0, 0
 
+    # Заморожена ли речка
+    freeze = False
+
     # Спрайты для анимации
     spFOX, spRiv, spCentralLoc, spBluefor, spHome = [], [], [], [], []
     for x in range(30):
@@ -112,20 +115,20 @@ def game_init(screen, all_sprites, screen_w, screen_h):
         spHome.append(pygame.transform.scale(load_image(f"home/home{x}.jpg"), (screen_w, screen_h)))
 
     return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-           spCentralLoc, spBluefor, spHome, color
+           spCentralLoc, spBluefor, spHome, color, freeze
 
 
 # Обработка клика
-def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h):
+def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h, freeze):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
-            return False, cords, bg_image, pixels, color
+            return False, cords, bg_image, pixels, color, freeze
 
         # Выход из программы по клавише Esc
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                return False, cords, bg_image, pixels, color
+                return False, cords, bg_image, pixels, color, freeze
 
         if event.type == pygame.MOUSEMOTION:
             if pixels[event.pos] != 0 and pixels[event.pos] != 16777215:
@@ -142,28 +145,39 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for i in objects:
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-                i.pick_up(event.pos, hero.cords)
+                if i.pick_up(event.pos, hero.cords):
+                    freeze = True
             color = pixels[event.pos]
 
-            return True, event.pos, bg_image, pixels, color
-    return True, cords, bg_image, pixels, color
+            return True, event.pos, bg_image, pixels, color, freeze
+    return True, cords, bg_image, pixels, color, freeze
 
 
 # Меняем фон
-def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
+def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze):
     # Если нажали на соответствующий цвет выбираем фон
     if color == 66047:
-        bg_image = f"river/background_river0.PNG"
-        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+        if freeze:
+            bg_image = f"river/background_riverF.PNG"
+            bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
-        wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background_river.jpg"), (screen_w, screen_h))
-        pixels = pygame.PixelArray(wb_bg_image)
+            wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background_river_fr.jpg"),
+                                                 (screen_w, screen_h))
+            pixels = pygame.PixelArray(wb_bg_image)
+        else:
+            bg_image = f"river/background_river0.PNG"
+            bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+
+            wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background_river.jpg"),
+                                                 (screen_w, screen_h))
+            pixels = pygame.PixelArray(wb_bg_image)
 
         # Устанавливаем место героя
         hero.change_rect(screen_w * 0.85, screen_h * 0.75)
 
         # Звук течения реки
         music_play('river')
+        pygame.mixer.music.set_volume(0.0)
 
         return bg_image, pixels
 
@@ -179,7 +193,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
 
         # Звук главного меню
         music_play('main')
-        pygame.mixer.music.set_volume(0.1)
+        pygame.mixer.music.set_volume(0.0)
 
         return bg_image, pixels
 
@@ -194,7 +208,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
 
         # Звук главного меню
         music_play('main')
-        pygame.mixer.music.set_volume(0.1)
+        pygame.mixer.music.set_volume(0.0)
 
         return bg_image, pixels
 
@@ -217,7 +231,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
 
 # Функция обхода препятствий
 def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count, ccount,
-                  cccount, screen_w, screen_h, color):
+                  cccount, screen_w, screen_h, color, freeze):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
     if pixels[cords] == 0 and hero.need_step(cords):
 
@@ -252,7 +266,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
     elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == 254):
-        bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, color)
+        bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze)
         cords = hero.get_cords()
         color = 16777215
 
@@ -265,7 +279,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
                 cords = cords[0], i
                 break
 
-    return barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color
+    return barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, freeze
 
 
 # Переход на новый тик
@@ -284,24 +298,25 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock):
 
 def game(pygame):
     # Конфигурация экрана
-    screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h, cursor = screen_init(pygame)
+    screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h = screen_init(pygame)
 
     # Получение героя, фон, картинку фона, остальные объекты в списке
-    hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
+    cursor, hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-    spCentralLoc, spBluefor, spHome, color = game_init(screen, all_sprites, screen_w, screen_h)
+    spCentralLoc, spBluefor, spHome, color, freeze = game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
-                        spHome)
+                        spHome, freeze)
 
-        running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
-                                                                 cords, color, cursor, screen_w, screen_h)
-        barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color \
+        running, cords, bg_image, pixels, color, freeze = event_handling(pygame.event.get(), hero, bg_image, objects,
+                                                                         pixels, cords, color, cursor, screen_w,
+                                                                         screen_h, freeze)
+        barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, freeze \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
-                            ccount, cccount, screen_w, screen_h, color)
+                            ccount, cccount, screen_w, screen_h, color, freeze)
 
         game_update(pygame, screen, all_sprites, hero, cords, clock)
 
@@ -317,9 +332,9 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
     return ccount, cccount
 
 
-def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor, spHome):
+def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor, spHome, freeze):
     fps += 1
-    if 'background_river' in bg_image and fps % 40 == 0:
+    if 'background_river' in bg_image and fps % 40 == 0 and not freeze:
         if fps >= 120:
             fps = 0
         bg.image = spRiv[fps // 40]
