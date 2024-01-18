@@ -55,7 +55,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     apple = Entity(all_sprites, True, (100, 100),'backg_main.jpg', "apple.jpg")
     apple.set_rect(500, 800)
     # Второй объект
-    snowball = Entity(all_sprites, True, (100, 100),'background_river.jpg', "snowball.png")
+    snowball = Entity(all_sprites, True, (100, 100),'core/data/river', "snowball.png")
     snowball.set_rect(1000, 800)
 
     # !!!HERO всегда последний!!!
@@ -150,6 +150,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
                 i.pick_up(event.pos, hero.cords, inventory)
                 i.bg_check(bg_image)
+                print(i.bg)
                 if i.visible() == False and i in all_sprites:
                     all_sprites.remove(i)
                 elif i.visible() == True and i not in all_sprites:

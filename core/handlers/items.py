@@ -142,11 +142,15 @@ class Entity(Object):
             inventory.append(self)
 
     def bg_check(self, cur_bg):
-        if self.bg != cur_bg:
+        try:
+            cur_bg = cur_bg.split('/')[1]
+        except Exception:
+            pass
+        if cur_bg not in self.bg:
             self.is_visible = False
-        elif self.bg == cur_bg and self.picked_up == False:
+        elif cur_bg in self.bg and self.picked_up == False:
             self.is_visible = True
-        elif self.bg == cur_bg and self.picked_up == True:
+        elif cur_bg in self.bg and self.picked_up == True:
             self.is_visible = False
 
     def place(self, bg, cords):
