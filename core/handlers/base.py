@@ -154,7 +154,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
 
 
 # Меняем фон
-def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze):
+def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords):
     # Если нажали на соответствующий цвет выбираем фон
     if color == 66047:
         if freeze:
@@ -174,12 +174,12 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze):
 
         # Устанавливаем место героя
         hero.change_rect(screen_w * 0.9, screen_h * 0.8)
-
+        cords = screen_w * 0.9, screen_h * 0.8
         # Звук течения реки
         music_play('river')
         pygame.mixer.music.set_volume(0.0)
 
-        return bg_image, pixels
+        return bg_image, pixels, cords
 
     if color == 254:
         pygame.mixer.music.set_volume(0.1)
@@ -191,15 +191,18 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze):
         pixels = pygame.PixelArray(wb_bg_image)
         if bg_image_past == 'backgrounds/forest.jpg':
             hero.change_rect(screen_w * 0.4, screen_h * 0.7)
+            cords = screen_w * 0.4, screen_h * 0.7
         elif bg_image_past == 'river/background_river0.PNG':
             hero.change_rect(screen_w * 0.05, screen_h * 0.75)
+            cords = screen_w * 0.05, screen_h * 0.75
         else:
             hero.change_rect(screen_w * 0.75, screen_h * 0.75)
+            cords = screen_w * 0.75, screen_h * 0.75
         # Звук главного меню
         music_play('main')
         pygame.mixer.music.set_volume(0.0)
 
-        return bg_image, pixels
+        return bg_image, pixels, cords
 
     if color == 65515:
         bg_image = "backgrounds/forest.jpg"
@@ -209,12 +212,13 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze):
         pixels = pygame.PixelArray(wb_bg_image)
 
         hero.change_rect(screen_w * 0.01, screen_h * 0.75)
+        cords = screen_w * 0.01, screen_h * 0.75
 
         # Звук главного меню
         music_play('main')
         pygame.mixer.music.set_volume(0.0)
 
-        return bg_image, pixels
+        return bg_image, pixels, cords
 
     if color == 130816:
         bg_image = "backgrounds/home.jpg"
@@ -224,13 +228,14 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze):
         pixels = pygame.PixelArray(wb_bg_image)
 
         hero.change_rect(screen_w * 0.15, screen_h * 0.75)
+        cords = screen_w * 0.15, screen_h * 0.75
 
         # Звук главного меню
         pygame.mixer.music.set_volume(0.0)
         music_play('home')
 
-        return bg_image, pixels
-    return bg_image, pixels
+        return bg_image, pixels, cords
+    return bg_image, pixels, cords
 
 
 # Функция обхода препятствий
@@ -267,11 +272,9 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             # Меняем корды героя на dx, dy, если возвращается True, мы обошли препятствие,
             # Иначе повторяем код со следующим тиком
             barrier = hero.overcome_step(pixels, dx, dy)
-
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
     elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == 254):
-        bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze)
-        cords = hero.get_cords()
+        bg_image, pixels, cords = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords)
         color = 16777215
 
     # Если пиксель цветной, идем к верхнему черному пикселю по этому Y
