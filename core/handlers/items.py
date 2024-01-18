@@ -1,5 +1,7 @@
 import pygame
 from core.data.constant import hW, hH
+import core.handlers.base as base
+import os
 
 
 # Класс всех объектов на экране
@@ -116,9 +118,13 @@ class Entity(Object):
         self.const_size = size
         self.is_visible = visible
         # На каком фоне показывается Object
-        # self.bg = bg
+        try:
+            self.bg = os.listdir(bg)
+        except Exception:
+            self.bg = bg
+
         self.picked_up = False
-        self.image = pygame.transform.scale(core.handlers.base.load_image(item_image), self.size)
+        self.image = pygame.transform.scale(base.load_image(item_image), self.size)
         self.rect = self.image.get_rect()
 
     def visible(self):

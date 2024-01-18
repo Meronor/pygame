@@ -16,7 +16,7 @@ def screen_init(pygame):
     screen_h = screen_info.current_h
 
     # Растягиваем окно во весь экран
-    screen = pygame.display.set_mode((screen_w, screen_h), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((screen_w, screen_h))
 
     # Устанавливаем название окна
     pygame.display.set_caption('Game')
@@ -52,7 +52,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    apple = Entity(all_sprites, True, (100, 100),'backround.jpg', "apple.jpg")
+    apple = Entity(all_sprites, True, (100, 100),'backg_main.jpg', "apple.jpg")
     apple.set_rect(500, 800)
     # Второй объект
     snowball = Entity(all_sprites, True, (100, 100),'background_river.jpg', "snowball.png")
@@ -75,16 +75,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
-def game_init(screen, all_sprites, screen_w, screen_h, objects):
-    for i in objects:
-        # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-        i.bg_check('backround.jpg')
-        if i.visible() == False and i in all_sprites:
-            all_sprites.remove(i)
-        elif i.visible() == True and i not in all_sprites:
-            all_sprites.add(i)
-        elif i.visible() and i in all_sprites:
-            all_sprites.add(i)
+def game_init(screen, all_sprites, screen_w, screen_h):
     all_sprites.draw(screen)
 
     # Главная музыка, ее воспроизведение
@@ -126,7 +117,7 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
         spHome.append(pygame.transform.scale(load_image(f"home/home{x}.jpg"), (screen_w, screen_h)))
 
     return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-           spCentralLoc, spBluefor, spHome, color
+           spCentralLoc, spBluefor, spHome, color, inventory
 
 
 # Обработка клика
@@ -134,12 +125,12 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
-            return False, cords, bg_image, pixels, color
+            return False, cords, bg_image, pixels, color, inventory
 
         # Выход из программы по клавише Esc
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                return False, cords, bg_image, pixels, color
+                return False, cords, bg_image, pixels, color, inventory
 
         if event.type == pygame.MOUSEMOTION:
             if pixels[event.pos] != 0 and pixels[event.pos] != 16777215:
@@ -153,6 +144,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Новые требуемые координаты героя
             hero.need_rotate(event.pos)
+            color = pixels[event.pos]
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for i in objects:
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
@@ -171,8 +163,8 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
                     item.change_rect((i + 1) * 10 + 50 * i, 10)
                     all_sprites.add(item)
 
-            return True, event.pos, bg_image, pixels
-    return True, cords, bg_image, pixels
+            return True, event.pos, bg_image, pixels, color, inventory
+    return True, cords, bg_image, pixels, color, inventory
 
 
 # Меняем фон
@@ -295,7 +287,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
 
 # Переход на новый тик
-def game_update(pygame, screen, all_sprites, hero, cords, clock, inventory):
+def game_update(pygame, screen, all_sprites, hero, cords, clock):
     # Проверка необходимости перевернуть героя
     hero.need_rotate(cords)
 
@@ -317,13 +309,13 @@ def game(pygame):
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-    spCentralLoc, spBluefor, spHome, color, inventory = game_init(screen, all_sprites, screen_w, screen_h, objects)
+    spCentralLoc, spBluefor, spHome, color, inventory = game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
                         spHome)
 
-        running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
+        running, cords, bg_image, pixels, color, inventory = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
                                                                  cords, color, cursor, screen_w, screen_h, all_sprites, inventory)
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
