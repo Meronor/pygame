@@ -34,7 +34,17 @@ def screen_init(pygame):
     wb_bg_image = load_image("wb_backgrounds/wb_start_menu.jpg")
     pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
 
-    return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h
+    # Меняем курсор
+    cursor_image = "cursor.jpg"
+    cursor = pygame.sprite.Sprite(all_sprites)
+
+    cursor.image = pygame.transform.scale(load_image(cursor_image), (screen_w * 0.05, screen_h * 0.05))
+    cursor.rect = cursor.image.get_rect()
+
+    # скрываем системный курсор
+    pygame.mouse.set_visible(False)
+
+    return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h, cursor
 
 
 # Добавляем объекты
@@ -86,23 +96,27 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     fps = 0
 
     # Какие-то счетчики
-    count = 0
-    ccount = 0
-    cccount = 0
-    speccou = 0
+    count, ccount, cccount, speccou = 0, 0, 0, 0
 
     # Спрайты для анимации
-    spFOX = [load_image(f"movement/move{x}.PNG") for x in range(30)]
-    spRiv = [load_image(f"river/background_river{y}.PNG") for y in range(3)]
-    spCentralLoc = [load_image(f"centralloc/cloc{y}.PNG") for y in range(3)]
-    spBluefor = [load_image(f"bluefor/blf{y}.PNG") for y in range(4)]
-    spHome = [load_image(f"home/home{y}.PNG") for y in range(3)]
+    spFOX, spRiv, spCentralLoc, spBluefor, spHome = [], [], [], [], []
+    for x in range(30):
+        spFOX.append(pygame.transform.scale(load_image(f"movement/move{x}.PNG"), (dS, dS)))
+    for x in range(3):
+        spRiv.append(pygame.transform.scale(load_image(f"river/background_river{x}.PNG"), (screen_w, screen_h)))
+    for x in range(3):
+        spCentralLoc.append(pygame.transform.scale(load_image(f"centralloc/cloc{x}.PNG"), (screen_w, screen_h)))
+    for x in range(4):
+        spBluefor.append(pygame.transform.scale(load_image(f"bluefor/blf{x}.PNG"), (screen_w, screen_h)))
+    for x in range(3):
+        spHome.append(pygame.transform.scale(load_image(f"home/home{x}.PNG"), (screen_w, screen_h)))
 
-    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, spBluefor, spHome, color
+    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
+           spCentralLoc, spBluefor, spHome, color
 
 
 # Обработка клика
-def event_handling(events, hero, bg_image, objects, pixels, cords, color):
+def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -112,6 +126,10 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 return False, cords, bg_image, pixels, color
+
+        if event.type == pygame.MOUSEMOTION:
+            # изменяем положение спрайта-стрелки
+            cursor.rect.topleft = event.pos
 
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -128,7 +146,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color):
 
 
 # Меняем фон
-def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
+def background(hero, bg, bg_image, pixels, screen_w, screen_h, color):
     # Если нажали на соответствующий цвет выбираем фон
     if color == 66047:
         bg_image = f"river/background_river0.PNG"
@@ -224,7 +242,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
     elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == 254):
-        bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color)
+        bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, color)
         cords = hero.get_cords()
         color = 16777215
 
@@ -256,21 +274,21 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock):
 
 def game(pygame):
     # Конфигурация экрана
-    screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h = screen_init(pygame)
+    screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h, cursor = screen_init(pygame)
 
     # Получение героя, фон, картинку фона, остальные объекты в списке
     hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
-    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, spBluefor, spHome, color = \
-        game_init(screen, all_sprites, screen_w, screen_h)
+    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
+    spCentralLoc, spBluefor, spHome, color = game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
-        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor,
+        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
                         spHome)
 
         running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
-                                                                 cords, color)
+                                                                 cords, color, cursor)
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
                             ccount, cccount, screen_w, screen_h, color)
@@ -289,29 +307,33 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
     return ccount, cccount
 
 
-def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor, spHome):
+def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor, spHome):
     fps += 1
     if 'background_river' in bg_image and fps % 40 == 0:
         if fps >= 120:
             fps = 0
-        bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
+        bg.image = spRiv[fps // 40]
     if 'forest' in bg_image and fps % 50 == 0:
         if fps >= 200:
             fps = 0
-        bg.image = pygame.transform.scale(spBluefor[fps // 50], (screen_w, screen_h))
+        bg.image = spBluefor[fps // 50]
     if 'home' in bg_image and fps % 40 == 0:
         if fps >= 120:
             fps = 0
-        bg.image = pygame.transform.scale(spHome[fps // 40], (screen_w, screen_h))
+        bg.image = spHome[fps // 40]
     if 'backg_main' in bg_image and fps % 120 == 0:
         if fps >= 360:
             fps = 0
-        bg.image = pygame.transform.scale(spCentralLoc[fps // 120], (screen_w, screen_h))
+        bg.image = spCentralLoc[fps // 120]
     if hero.is_rotate() and 'forest' '''not in bg_image and 'home' not in bg_image''':
-        hero.image = pygame.transform.scale(spFOX[ccount % len(spFOX)], (dS, dS))
+        hero.image = spFOX[ccount % len(spFOX)]
     else:
-        hero.image = pygame.transform.scale(pygame.transform.flip(spFOX[ccount % len(spFOX)], True, False), (dS, dS))
+        hero.image = pygame.transform.flip(spFOX[ccount % len(spFOX)], True, False)
     return fps
+
+
+def cursor():
+    pass
 
 
 def music_play(key):
