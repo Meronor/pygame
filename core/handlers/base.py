@@ -126,7 +126,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color):
 
 # Меняем фон
 def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
-    # Если нажали на красный цвет, и персонаж находится недалеко от бортика, выбираем соответствующий фон
+    # Если нажали на соответствующий цвет выбираем фон
     if color == 66047:
         bg_image = f"river/background_river{count // 20}.PNG"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
@@ -188,11 +188,9 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
 
 # Функция обхода препятствий
 def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count, ccount,
-                  cccount, screen_w,
-                  screen_h, color):
+                  cccount, screen_w, screen_h, color):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
     if pixels[cords] == 0 and hero.need_step(cords):
-
         ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
         # Меняем корды героя, если хоть одна отличается от кордов клика
 
@@ -217,9 +215,12 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             # Меняем корды героя на dx, dy, если возвращается True, мы обошли препятствие,
             # Иначе повторяем код со следующим тиком
             barrier = hero.overcome_step(pixels, dx, dy)
+
+    # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
     elif not hero.need_step(cords) and color != 0:
         bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color)
         cords = hero.get_cords()
+        color = 16777215
 
     # Если пиксель цветной, идем к верхнему черному пикселю по этому Y
     elif pixels[cords] != 0 and pixels[cords] != 16777215 and cords[1] < screen_h - 1:
@@ -230,7 +231,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
                 cords = cords[0], i
                 break
 
-    return barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels
+    return barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color
 
 
 # Переход на новый тик
@@ -263,15 +264,9 @@ def game(pygame):
 
         running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
                                                                  cords, color)
-        barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels = step_handling(screen, bg,
-                                                                                                    bg_image, pixels,
-                                                                                                    cords,
-                                                                                                    hero, all_sprites,
-                                                                                                    barrier, isImpasse,
-                                                                                                    dx, dy, count,
-                                                                                                    ccount, cccount,
-                                                                                                    screen_w, screen_h,
-                                                                                                    color)
+        barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color \
+            = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
+                            ccount, cccount, screen_w, screen_h, color)
 
         game_update(pygame, screen, all_sprites, hero, cords, clock)
 
