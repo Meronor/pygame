@@ -24,7 +24,7 @@ def screen_init(pygame):
     all_sprites = pygame.sprite.Group()
 
     # Получаем и растягиваем фон
-    bg_image = "backgrounds/background.jpg"
+    bg_image = "backgrounds/backg_main.jpg"
     bg = Object(all_sprites)
     bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
@@ -99,7 +99,7 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     spBluefor = [load_image(f"bluefor/blf{y}.PNG") for y in range(4)]
     spHome = [load_image(f"home/home{y}.PNG") for y in range(3)]
 
-    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, color
+    return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, spBluefor, spHome, color
 
 
 # Обработка клика
@@ -147,7 +147,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
         return bg_image, pixels
 
     if color == 254:
-        bg_image = "backgrounds/background.jpg"
+        bg_image = "backgrounds/backg_main.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
         wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background.jpg"), (screen_w, screen_h))
@@ -202,7 +202,10 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
         # Обновляем счетчик на 60
         print(bg_image)
-        count += 1
+        if 'forest' in bg_image or 'home' in bg_image:
+            count += 1
+        else:
+            count += 1
         if count == 60:
             count = 0
 
@@ -260,11 +263,11 @@ def game(pygame):
     hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
-    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, color = \
+    running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, spCentralLoc, spBluefor, spHome, color = \
         game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
-        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc)
+        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor, spHome)
 
         running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
                                                                  cords, color)
@@ -292,16 +295,23 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
     return ccount, cccount
 
 
-def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc):
-    fps += 1
+def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor, spHome):
+    if 'forest' in bg_image or 'home' in bg_image:
+        fps += 1
+    else:
+        fps += 1
     print(fps)
     if fps == 120:
         fps = 0
     if 'background_river' in bg_image and fps % 40 == 0:
         bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
-    if 'background' in bg_image and fps % 40 == 0:
+    if 'forest' in bg_image and fps % 30 == 0:
+        bg.image = pygame.transform.scale(spBluefor[fps // 30], (screen_w, screen_h))
+    if 'home' in bg_image and fps % 40 == 0:
+        bg.image = pygame.transform.scale(spHome[fps // 40], (screen_w, screen_h))
+    if 'backg_main' in bg_image and fps % 40 == 0:
         bg.image = pygame.transform.scale(spCentralLoc[fps // 40], (screen_w, screen_h))
-    if hero.is_rotate():
+    if hero.is_rotate() and 'forest' '''not in bg_image and 'home' not in bg_image''':
         hero.image = pygame.transform.scale(spFOX[ccount % len(spFOX)], (dS, dS))
     else:
         hero.image = pygame.transform.scale(pygame.transform.flip(spFOX[ccount % len(spFOX)], True, False), (dS, dS))
@@ -314,7 +324,7 @@ def music_play(key):
     if key == 'river':
         icesound.stop()
         riversound.play()
-        riversound.set_volume(0.2)
+        riversound.set_volume(0.07)
     elif key == 'ice':
         riversound.stop()
     elif key == 'main':
