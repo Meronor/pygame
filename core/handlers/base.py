@@ -208,6 +208,9 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
             isImpasse = hero.next_step(cords, pixels)
             count += 1
+            ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
+            isImpasse = hero.next_step(cords, pixels)
+            count += 1
         else:
             count += 1
         if count == 60:
@@ -251,7 +254,7 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock):
     hero.need_rotate(cords)
 
     # Перерисовываем экран
-    all_sprites.draw(screen)
+    # all_sprites.draw(screen)
 
     clock.tick(tk)
 
