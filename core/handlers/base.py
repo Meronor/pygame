@@ -50,6 +50,11 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     apple.rect = apple.image.get_rect()
     apple.set_rect(250, 800)
 
+    frog = Entity(all_sprites, True)
+    frog.image = pygame.transform.scale(load_image("frog/frog0.PNG"), (600, 400))
+    frog.rect = apple.image.get_rect()
+    frog.set_rect(190, 560)
+
     # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
@@ -67,7 +72,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return cursor, hero, [apple]
+    return cursor, hero, [apple, frog]
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -315,6 +320,7 @@ def game(pygame):
     spCentralLoc, spBluefor, spHome, color, freeze = game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
+
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
                         spHome, freeze)
 
@@ -372,7 +378,7 @@ def music_play(key):
         homesound.stop()
         icesound.stop()
         riversound.play()
-        homesound.set_volume(0.0)
+        riversound.set_volume(0.1)
     if key == 'stop':
         homesound.stop()
         homesound.set_volume(0.0)
@@ -387,7 +393,7 @@ def music_play(key):
         homesound.set_volume(0.0)
     if key == 'home':
         homesound.play()
-        homesound.set_volume(0.0)
+        homesound.set_volume(0.15)
 
 
 def load_image(name):
