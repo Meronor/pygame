@@ -40,25 +40,25 @@ def screen_init(pygame):
 def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
-    '''
-    apple = Entity(all_sprites, True)
-    apple.image = pygame.transform.scale(load_image("grass.PNG"), (screen_w, screen_h))
-    apple.rect = apple.image.get_rect()
-    apple.set_rect(0, 0)
-    '''
+    # Первый объект
+    # apple = Entity(all_sprites, True)
+    # apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
+    # apple.rect = apple.image.get_rect()
+    # apple.set_rect(250, 800)
 
     # Второй объект !!!HERO всегда последний!!!
     hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
     hero.image = pygame.transform.scale(hero_image, (dS, dS))
     hero.rect = hero.image.get_rect()
-    # Первый объект
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
     return hero, []
+
+
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -295,12 +295,12 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
 def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc):
     fps += 1
     print(fps)
-    if fps == 360:
+    if fps == 120:
         fps = 0
     if 'background_river' in bg_image and fps % 40 == 0:
         bg.image = pygame.transform.scale(spRiv[fps // 40], (screen_w, screen_h))
-    if 'background' in bg_image and fps % 120 == 0:
-        bg.image = pygame.transform.scale(spCentralLoc[fps // 120], (screen_w, screen_h))
+    if 'background' in bg_image and fps % 40 == 0:
+        bg.image = pygame.transform.scale(spCentralLoc[fps // 40], (screen_w, screen_h))
     if hero.is_rotate():
         hero.image = pygame.transform.scale(spFOX[ccount % len(spFOX)], (dS, dS))
     else:
