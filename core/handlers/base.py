@@ -24,13 +24,14 @@ def screen_init(pygame):
     all_sprites = pygame.sprite.Group()
 
     # Получаем и растягиваем фон
-    bg_image = "backgrounds/backg_main.jpg"
+    bg_image = "backgrounds/start_menu.jpg"
     bg = Object(all_sprites)
-    bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
+    bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
     bg.rect = bg.image.get_rect()
     bg.set_rect(0, 0)
+
     # Растянутый задний фон в ч/б (границы ходьбы) преобразуем в PixelArray
-    wb_bg_image = load_image("wb_backgrounds/wb_background.jpg")
+    wb_bg_image = load_image("wb_backgrounds/wb_start_menu.jpg")
     pixels = pygame.PixelArray(pygame.transform.scale(wb_bg_image, (screen_w, screen_h)))
 
     return screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h
@@ -81,10 +82,10 @@ def game_init(screen, all_sprites, screen_w, screen_h):
 
     color = 0
 
-    # что то непонятное
+    # Что то непонятное
     fps = 0
 
-    # какие то счетчики
+    # Какие-то счетчики
     count = 0
     ccount = 0
     cccount = 0
@@ -145,7 +146,6 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
         return bg_image, pixels
 
     if color == 254:
-        pygame.mixer.music.set_volume(0.1)
         bg_image = "backgrounds/backg_main.jpg"
         bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
 
@@ -156,6 +156,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
 
         # Звук главного меню
         music_play('main')
+        pygame.mixer.music.set_volume(0.1)
 
         return bg_image, pixels
 
@@ -170,6 +171,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color):
 
         # Звук главного меню
         music_play('main')
+        pygame.mixer.music.set_volume(0.1)
 
         return bg_image, pixels
 
@@ -199,15 +201,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
         # Меняем корды героя, если хоть одна отличается от кордов клика
 
         # Обновляем счетчик на 60
-        print(bg_image)
-        if 'forest' in bg_image or 'home' in bg_image:
-            print(cords)
-            count += 1
-            ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
-            isImpasse = hero.next_step(cords, pixels)
-            count += 1
-        else:
-            count += 1
+        count += 1
         if count == 60:
             count = 0
 
@@ -229,7 +223,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             barrier = hero.overcome_step(pixels, dx, dy)
 
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
-    elif not hero.need_step(cords) and color != 0:
+    elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == 254):
         bg_image, pixels = background(hero, bg, bg_image, pixels, screen_w, screen_h, count, color)
         cords = hero.get_cords()
         color = 16777215
@@ -272,7 +266,8 @@ def game(pygame):
         game_init(screen, all_sprites, screen_w, screen_h)
 
     while running:
-        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor, spHome)
+        fps = animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor,
+                        spHome)
 
         running, cords, bg_image, pixels, color = event_handling(pygame.event.get(), hero, bg_image, objects, pixels,
                                                                  cords, color)
@@ -296,7 +291,6 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
 
 def animation(hero, bg, fps, spFOX, spRiv, ccount, screen_w, screen_h, bg_image, spCentralLoc, spBluefor, spHome):
     fps += 1
-    print(fps)
     if 'background_river' in bg_image and fps % 40 == 0:
         if fps >= 120:
             fps = 0
@@ -329,13 +323,9 @@ def music_play(key):
         icesound.stop()
         riversound.play()
         riversound.set_volume(0.07)
-    if key == 'stop':
-        homesound.stop()
-    if key == 'ice':
+    elif key == 'ice':
         riversound.stop()
-        homesound.stop()
-    if key == 'main':
-        homesound.set_volume(0)
+    elif key == 'main':
         icesound.stop()
         riversound.stop()
     if key == 'home':
