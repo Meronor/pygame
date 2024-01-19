@@ -1,5 +1,7 @@
 import pygame
 from core.data.constant import hW, hH
+import core.handlers.base as base
+import os
 
 
 # Класс всех объектов на экране
@@ -106,23 +108,29 @@ class Hero(Object):
 
 # Класс предметов
 class Entity(Object):
-    def __init__(self, all_sprites, visible):
+    def __init__(self, all_sprites, visible, size, bg, item_image):
         super().__init__(all_sprites)
         self.all_sprites = all_sprites
         all_sprites.add(self)
-        self.size = (100, 100)
+        # задаем карткинку
+        self.item_image = item_image
+        self.size = size
+        self.const_size = size
         self.is_visible = visible
         # На каком фоне показывается Object
-        # self.bg = bg
-        self.picked_up = False
+        try:
+            self.bg = os.listdir(bg)
+        except Exception:
+            self.bg = bg
 
-    def disappear(self):
-        self.is_visible = False
+        self.picked_up = False
+        self.image = pygame.transform.scale(base.load_image(item_image), self.size)
+        self.rect = self.image.get_rect()
 
     def visible(self):
         return self.is_visible
 
-    def pick_up(self, mouse_cords, hero_cords):
+    def pick_up(self, mouse_cords, hero_cords, inventory):
         # Проверка, находится ли курсор на энтити и как далеко находится герой
         if self.is_visible and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
                                   and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
@@ -130,5 +138,28 @@ class Entity(Object):
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
             self.disappear()
             self.all_sprites.remove(self)
+            self.is_visible = False
+            self.picked_up = True
+
+            inventory.append(self)
             return True
         return False
+
+    def bg_check(self, cur_bg):
+        try:
+            cur_bg = cur_bg.split('/')[1]
+        except Exception:
+            pass
+        if cur_bg not in self.bg:
+            self.is_visible = False
+        elif cur_bg in self.bg and self.picked_up == False:
+            self.is_visible = True
+        elif cur_bg in self.bg and self.picked_up == True:
+            self.is_visible = False
+
+    def place(self, bg, cords):
+        self.change_rect(cords)
+        self.picked_up = False
+        self.visible = True
+        self.size = self.const_size
+        self.bg = bg

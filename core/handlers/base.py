@@ -45,10 +45,11 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    apple = Entity(all_sprites, True)
-    apple.image = pygame.transform.scale(load_image("apple.jpg"), (100, 100))
-    apple.rect = apple.image.get_rect()
-    apple.set_rect(250, 800)
+    apple = Entity(all_sprites, True, (100, 100), 'backg_main.jpg', "apple.jpg")
+    apple.set_rect(500, 800)
+    # Второй объект
+    snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
+    snowball.set_rect(1000, 800)
 
     # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
@@ -63,15 +64,37 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     cursor.image = pygame.transform.scale(load_image(cursor_image), (screen_w * 0.05, screen_h * 0.05))
     cursor.rect = cursor.image.get_rect()
 
+    # objects
+    objects = [apple, snowball]
+
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return cursor, hero, [apple]
+    return cursor, hero, objects
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
-def game_init(screen, all_sprites, screen_w, screen_h):
+def game_init(screen, all_sprites, screen_w, screen_h, objects):
+    for i in objects:
+        # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
+        i.bg_check('backround.jpg')
+        if i.visible() == False and i in all_sprites:
+            all_sprites.remove(i)
+        elif i.visible() == True and i not in all_sprites:
+            # Добавление спрайта на предпоследнее место в группе
+            sprites = list(all_sprites.sprites())  # Преобразование группы в список
+            sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
+            all_sprites.empty()  # Очистка группы
+            for sprite in sprites:
+                all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
+        elif i.visible() and i in all_sprites:
+            # Добавление спрайта на предпоследнее место в группе
+            sprites = list(all_sprites.sprites())  # Преобразование группы в список
+            sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
+            all_sprites.empty()  # Очистка группы
+            for sprite in sprites:
+                all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
     all_sprites.draw(screen)
 
     # Главная музыка, ее воспроизведение
@@ -87,6 +110,7 @@ def game_init(screen, all_sprites, screen_w, screen_h):
     isImpasse = False
     # Новые требуемые координаты героя совпадают с собственными координатами героя
     cords = (screen_w * 0.75, screen_h * 0.75)
+    inventory = []
     running = True
     dx, dy = 0, 0
 
@@ -97,6 +121,8 @@ def game_init(screen, all_sprites, screen_w, screen_h):
 
     # Какие-то счетчики
     count, ccount, cccount, speccou = 0, 0, 0, 0
+
+    savecords = (0, 0)
 
     # Заморожена ли речка
     freeze = False
@@ -115,20 +141,21 @@ def game_init(screen, all_sprites, screen_w, screen_h):
         spHome.append(pygame.transform.scale(load_image(f"home/home{x}.jpg"), (screen_w, screen_h)))
 
     return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-           spCentralLoc, spBluefor, spHome, color, freeze
+           spCentralLoc, spBluefor, spHome, color, freeze, inventory, savecords
 
 
 # Обработка клика
-def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h, freeze):
+def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h, freeze,
+                   all_sprites, inventory, savecords):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
-            return False, cords, bg_image, pixels, color, freeze
+            return False, cords, bg_image, pixels, color, freeze, inventory, savecords
 
         # Выход из программы по клавише Esc
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                return False, cords, bg_image, pixels, color, freeze
+                return False, cords, bg_image, pixels, color, freeze, inventory, savecords
 
         if event.type == pygame.MOUSEMOTION:
             if pixels[event.pos] != 0 and pixels[event.pos] != 16777215:
@@ -137,20 +164,56 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
                 cursor.image = pygame.transform.scale(load_image('cursor.jpg'), (screen_w * 0.05, screen_h * 0.05))
             # изменяем положение спрайта-стрелки
             cursor.rect.topleft = event.pos[0] - 20, event.pos[1] - 10
+            for i, item in enumerate(inventory):
+                if event.buttons[0] and item.get_cords()[0] <= event.pos[0] <= item.get_cords()[0] + \
+                        item.image.get_width() and item.get_cords()[1] <= event.pos[1] <= item.get_cords()[1] + \
+                        item.image.get_height():
+                    delta = (event.pos[0] - savecords[0], event.pos[1] - savecords[1])
+                    item.set_rect(delta[0], delta[1])
+                    savecords = event.pos
 
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Новые требуемые координаты героя
             hero.need_rotate(event.pos)
+            color = pixels[event.pos]
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for i in objects:
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
                 if i.pick_up(event.pos, hero.cords):
                     freeze = True
-            color = pixels[event.pos]
+                i.pick_up(event.pos, hero.cords, inventory)
+                i.bg_check(bg_image)
+                if i.visible() == False and i in all_sprites:
+                    all_sprites.remove(i)
+                elif i.visible() == True and i not in all_sprites:
+                    # Добавление спрайта на предпоследнее место в группе
+                    sprites = list(all_sprites.sprites())  # Преобразование группы в список
+                    sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
+                    all_sprites.empty()  # Очистка группы
+                    for sprite in sprites:
+                        all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
+                elif i.visible() and i in all_sprites:
+                    # Добавление спрайта на предпоследнее место в группе
+                    sprites = list(all_sprites.sprites())  # Преобразование группы в список
+                    sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
+                    all_sprites.empty()  # Очистка группы
+                    for sprite in sprites:
+                        all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
 
-            return True, event.pos, bg_image, pixels, color, freeze
-    return True, cords, bg_image, pixels, color, freeze
+            if inventory:
+                for i, item in enumerate(inventory):
+                    item.image = pygame.transform.scale(load_image(item.item_image), (50, 50))
+                    item.change_rect((i + 1) * 10 + 50 * i, 10)
+                    # Добавление спрайта на предпоследнее место в группе
+                    sprites = list(all_sprites.sprites())  # Преобразование группы в список
+                    sprites.insert(-2, item)  # Вставка нового спрайта на предпоследнее место
+                    all_sprites.empty()  # Очистка группы
+                    for sprite in sprites:
+                        all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
+
+            return True, event.pos, bg_image, pixels, color, freeze, inventory, savecords
+    return True, cords, bg_image, pixels, color, freeze, inventory, savecords
 
 
 # Меняем фон
@@ -305,19 +368,20 @@ def game(pygame):
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-    spCentralLoc, spBluefor, spHome, color, freeze = game_init(screen, all_sprites, screen_w, screen_h)
+    spCentralLoc, spBluefor, spHome, color, freeze, inventory, savecords = game_init(screen, all_sprites, screen_w,
+                                                                                     screen_h, objects)
 
     while running:
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
                         spHome, freeze)
 
-        running, cords, bg_image, pixels, color, freeze = event_handling(pygame.event.get(), hero, bg_image, objects,
+        running, cords, bg_image, pixels, color, freeze, inventory, savecords = event_handling(pygame.event.get(), hero, bg_image, objects,
                                                                          pixels, cords, color, cursor, screen_w,
-                                                                         screen_h, freeze)
+                                                                         screen_h, freeze,all_sprites, inventory,
+                                                                                       savecords)
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, freeze \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
                             ccount, cccount, screen_w, screen_h, color, freeze)
-
         game_update(pygame, screen, all_sprites, hero, cords, clock)
 
 
