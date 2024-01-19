@@ -180,7 +180,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for i in objects:
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-                if i.pick_up(event.pos, hero.cords):
+                if i.pick_up(event.pos, hero.cords, inventory):
                     freeze = True
                 i.pick_up(event.pos, hero.cords, inventory)
                 i.bg_check(bg_image)
