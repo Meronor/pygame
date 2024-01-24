@@ -108,7 +108,7 @@ class Hero(Object):
 
 # Класс предметов
 class Entity(Object):
-    def __init__(self, all_sprites, visible, size, bg, item_image):
+    def __init__(self, all_sprites, visible, size, bg, item_image, active_color):
         super().__init__(all_sprites)
         self.all_sprites = all_sprites
         all_sprites.add(self)
@@ -126,6 +126,18 @@ class Entity(Object):
         self.picked_up = False
         self.image = pygame.transform.scale(base.load_image(item_image), self.size)
         self.rect = self.image.get_rect()
+        # Цвет на которое будет триггериться действие
+        self.active_color = active_color
+        self.action = False
+
+    def set_rect(self, dx, dy, color):
+        self.rect.x += dx
+        self.rect.y += dy
+
+        self.cords = (self.rect.x, self.rect.y)
+
+        if self.active_color == color:
+            self.action = True
 
     def visible(self):
         return self.is_visible
