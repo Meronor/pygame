@@ -7,3 +7,20 @@ dS = 200
 
 # кол-во тиков
 tk = 200
+
+# цвета обозначающие переход на соответствующую локу
+main_color = 254
+forest_color = 65515
+home_color = 130816
+river_color = 66047
+snejinka_color = 6921984
+white_color = 16777215
+
+# начальные положения
+key_pos = (200, 860)
+snejinka_pos = (300, 900)
+
+# размеры доп предметов
+entity_size = (100, 100)
+# размер в инвентаре
+inventory_size = (50, 50)

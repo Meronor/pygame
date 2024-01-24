@@ -5,7 +5,8 @@ import pygame
 # Импорт объектов-героев
 from core.handlers.items import Hero, Entity, Object
 # Получение констант из конфигурации
-from core.data.constant import dS, tk
+from core.data.constant import dS, tk, main_color, home_color, river_color, forest_color, snejinka_color, key_pos, \
+    snejinka_pos, entity_size, inventory_size, white_color
 
 
 # Первоначальная загрузка окна
@@ -45,14 +46,14 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    snejinka = Entity(all_sprites, True, (100, 100), 'backg_main.jpg', "snejinka.PNG", 6921984)
-    snejinka.set_rect(300, 900, None)
+    snejinka = Entity(all_sprites, True, entity_size, 'backg_main.jpg', "snejinka.PNG", snejinka_color)
+    snejinka.set_rect(snejinka_pos[0], snejinka_pos[1], None)
     # Второй объект
     # snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
     # snowball.set_rect(1000, 800)
     # Третий объект
-    key = Entity(all_sprites, True, (100, 100), 'background_riverF.PNG', "key.PNG", None)
-    key.set_rect(200, 860, None)
+    key = Entity(all_sprites, True, entity_size, 'background_riverF.PNG', "key.PNG", None)
+    key.set_rect(key_pos[0], key_pos[1], None)
     # Второй объект
 
     # frog = pygame.sprite.Sprite(all_sprites)
@@ -88,9 +89,9 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
     for i in objects:
         # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
         i.bg_check('backgrounds/start_menu.jpg')
-        if i.visible() == False and i in all_sprites:
+        if not i.visible() and i in all_sprites:
             all_sprites.remove(i)
-        elif i.visible() == True and i not in all_sprites:
+        elif i.visible() and i not in all_sprites:
             # Добавление спрайта на предпоследнее место в группе
             sprites = list(all_sprites.sprites())  # Преобразование группы в список
             sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
@@ -170,7 +171,7 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cu
                 return False, cords, bg_image, pixels, color, freeze
 
         if event.type == pygame.MOUSEMOTION:
-            if pixels[event.pos] != 0 and pixels[event.pos] != 16777215:
+            if pixels[event.pos] != 0 and pixels[event.pos] != white_color:
                 cursor.image = pygame.transform.scale(load_image('hand.png'), (screen_w * 0.05, screen_h * 0.05))
             else:
                 cursor.image = pygame.transform.scale(load_image('cursor.jpg'), (screen_w * 0.05, screen_h * 0.05))
@@ -218,11 +219,10 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cu
 def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords, objects, all_sprites, inventory):
     f = False
     for item in inventory:
-        print(item.active_color == 6921984)
-        if item.active_color == 6921984 and item.action:
+        if item.active_color == snejinka_color and item.action:
             f = True
     # Если нажали на соответствующий цвет выбираем фон
-    if color == 66047 and not f:
+    if color == river_color and not f:
         bg_image = f"river/background_river0.PNG"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -234,7 +234,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         hero.change_rect(screen_w * 0.9, screen_h * 0.8)
         cords = screen_w * 0.9, screen_h * 0.8
 
-    elif color == 254:
+    elif color == main_color:
         pygame.mixer.music.set_volume(0.1)
         if 'forest' in bg_image:
             hero.change_rect(screen_w * 0.4, screen_h * 0.7)
@@ -251,8 +251,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background.jpg"), (screen_w, screen_h))
         pixels = pygame.PixelArray(wb_bg_image)
 
-
-    elif color == 65515:
+    elif color == forest_color:
         bg_image = "backgrounds/forest.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -262,7 +261,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         hero.change_rect(screen_w * 0.01, screen_h * 0.75)
         cords = screen_w * 0.01, screen_h * 0.75
 
-    elif color == 130816:
+    elif color == home_color:
         bg_image = "backgrounds/home.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -293,7 +292,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
 
     if inventory:
         for i, item in enumerate(inventory):
-            item.image = pygame.transform.scale(load_image(item.item_image), (50, 50))
+            item.image = pygame.transform.scale(load_image(item.item_image), (inventory_size))
             item.change_rect((i + 1) * 10 + 50 * i, 10)
             # Добавление спрайта на предпоследнее место в группе
             sprites = list(all_sprites.sprites())  # Преобразование группы в список
@@ -340,13 +339,13 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             # Иначе повторяем код со следующим тиком
             barrier = hero.overcome_step(pixels, dx, dy)
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
-    elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == 254):
+    elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == main_color):
         bg_image, pixels, cords = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords,
                                              objects, all_sprites, inventory)
-        color = 16777215
+        color = white_color
 
     # Если пиксель цветной, идем к верхнему черному пикселю по этому Y
-    elif pixels[cords] != 0 and pixels[cords] != 16777215 and cords[1] < screen_h - 1:
+    elif pixels[cords] != 0 and pixels[cords] != white_color and cords[1] < screen_h - 1:
         # Ищем верхний черный пиксель данного столбца
         for i in range(screen_h):
             if pixels[cords[0], i] == 0:
@@ -415,8 +414,7 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
 def action(bg, bg_image, pixels, screen_w, screen_h, inventory):
     f = False
     for item in inventory:
-        print(item.active_color == 6921984)
-        if item.active_color == 6921984 and item.action:
+        if item.active_color == snejinka_color and item.action:
             f = True
     if f and 'background_river' in bg_image:
         bg_image = f"river/background_riverF.PNG"
@@ -433,7 +431,7 @@ def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBlu
     fps += 1
     f = False
     for item in inventory:
-        if item.active_color == 6921984 and item.action:
+        if item.active_color == snejinka_color and item.action:
             f = True
     if 'background_river' in bg_image and fps % 40 == 0 and not f:
         if fps >= 120:
