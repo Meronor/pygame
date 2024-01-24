@@ -45,16 +45,20 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    apple = Entity(all_sprites, True, (100, 100), 'backg_main.jpg', "snejinka.PNG")
-    apple.set_rect(500, 800)
+    snejinka = Entity(all_sprites, True, (100, 100), 'backg_main.jpg', "snejinka.PNG")
+    snejinka.set_rect(300, 900)
     # Второй объект
-    snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
-    snowball.set_rect(1000, 800)
+    # snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
+    # snowball.set_rect(1000, 800)
+    # Третий объект
+    key = Entity(all_sprites, True, (100, 100), 'background_riverF.PNG', "key.PNG")
+    key.set_rect(200, 860)
+    # Второй объект
 
-    #frog = Entity(all_sprites, True)
-    #frog.image = pygame.transform.scale(load_image("frog/frog0.PNG"), (600, 400))
-    #frog.rect = apple.image.get_rect()
-    #frog.set_rect(190, 560)
+    # frog = pygame.sprite.Sprite(all_sprites)
+    # frog.image = pygame.transform.scale(load_image("frog/frog0.PNG"), (600, 400))
+    # frog.rect = frog.image.get_rect()
+    # frog.rect.x, frog.rect.y = 190, 560
 
     # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
@@ -70,7 +74,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     cursor.rect = cursor.image.get_rect()
 
     # objects
-    objects = [apple, snowball]
+    objects = [snejinka, key]  # snowball
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
@@ -83,7 +87,7 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
 def game_init(screen, all_sprites, screen_w, screen_h, objects):
     for i in objects:
         # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-        i.bg_check('backround.jpg')
+        i.bg_check('backgrounds/start_menu.jpg')
         if i.visible() == False and i in all_sprites:
             all_sprites.remove(i)
         elif i.visible() == True and i not in all_sprites:
@@ -102,10 +106,13 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
                 all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
     all_sprites.draw(screen)
 
-    # Главная музыка, ее воспроизведение
-    pygame.mixer.music.load("core/data/musc/loc_sound.mp3")
-    pygame.mixer.music.play(-1)
-    pygame.mixer.music.set_volume(0.1)
+    riversound = pygame.mixer.Sound("core/data/musc/ivsound.wav")
+    homesound = pygame.mixer.Sound("core/data/musc/home.wav")
+
+    riversound.play()
+    homesound.play()
+    homesound.set_volume(0.2)
+    riversound.set_volume(0.05)
 
     clock = pygame.time.Clock()
 
@@ -174,8 +181,9 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
                         item.image.get_width() and item.get_cords()[1] <= event.pos[1] <= item.get_cords()[1] + \
                         item.image.get_height():
                     delta = (event.pos[0] - savecords[0], event.pos[1] - savecords[1])
+                    print(event.pos, savecords)
                     item.set_rect(delta[0], delta[1])
-                    savecords = event.pos
+                savecords = event.pos
 
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -187,24 +195,6 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
                 # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
                 if i.pick_up(event.pos, hero.cords, inventory):
                     freeze = True
-                i.pick_up(event.pos, hero.cords, inventory)
-                i.bg_check(bg_image)
-                if i.visible() == False and i in all_sprites:
-                    all_sprites.remove(i)
-                elif i.visible() == True and i not in all_sprites:
-                    # Добавление спрайта на предпоследнее место в группе
-                    sprites = list(all_sprites.sprites())  # Преобразование группы в список
-                    sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
-                    all_sprites.empty()  # Очистка группы
-                    for sprite in sprites:
-                        all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
-                elif i.visible() and i in all_sprites:
-                    # Добавление спрайта на предпоследнее место в группе
-                    sprites = list(all_sprites.sprites())  # Преобразование группы в список
-                    sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
-                    all_sprites.empty()  # Очистка группы
-                    for sprite in sprites:
-                        all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
 
             if inventory:
                 for i, item in enumerate(inventory):
@@ -222,7 +212,7 @@ def event_handling(events, hero, bg_image, objects, pixels, cords, color, cursor
 
 
 # Меняем фон
-def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords):
+def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords, objects, all_sprites):
     # Если нажали на соответствующий цвет выбираем фон
     if color == 66047:
         if freeze:
@@ -243,13 +233,10 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         # Устанавливаем место героя
         hero.change_rect(screen_w * 0.9, screen_h * 0.8)
         cords = screen_w * 0.9, screen_h * 0.8
-        # Звук течения реки
-        music_play('river')
-        pygame.mixer.music.set_volume(0.0)
 
         return bg_image, pixels, cords
 
-    if color == 254:
+    elif color == 254:
         pygame.mixer.music.set_volume(0.1)
         bg_image_past = bg_image
         bg_image = "backgrounds/backg_main.jpg"
@@ -266,13 +253,8 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         else:
             hero.change_rect(screen_w * 0.75, screen_h * 0.75)
             cords = screen_w * 0.75, screen_h * 0.75
-        # Звук главного меню
-        music_play('main')
-        pygame.mixer.music.set_volume(0.0)
 
-        return bg_image, pixels, cords
-
-    if color == 65515:
+    elif color == 65515:
         bg_image = "backgrounds/forest.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -282,13 +264,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         hero.change_rect(screen_w * 0.01, screen_h * 0.75)
         cords = screen_w * 0.01, screen_h * 0.75
 
-        # Звук главного меню
-        music_play('main')
-        pygame.mixer.music.set_volume(0.0)
-
-        return bg_image, pixels, cords
-
-    if color == 130816:
+    elif color == 130816:
         bg_image = "backgrounds/home.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -298,17 +274,31 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
         hero.change_rect(screen_w * 0.15, screen_h * 0.75)
         cords = screen_w * 0.15, screen_h * 0.75
 
-        # Звук главного меню
-        pygame.mixer.music.set_volume(0.0)
-        music_play('home')
+    for i in objects:
+        i.bg_check(bg_image)
+        if i.visible() == False and i in all_sprites:
+            all_sprites.remove(i)
+        elif i.visible() == True and i not in all_sprites:
+            # Добавление спрайта на предпоследнее место в группе
+            sprites = list(all_sprites.sprites())  # Преобразование группы в список
+            sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
+            all_sprites.empty()  # Очистка группы
+            for sprite in sprites:
+                all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
+        elif i.visible() and i in all_sprites:
+            # Добавление спрайта на предпоследнее место в группе
+            sprites = list(all_sprites.sprites())  # Преобразование группы в список
+            sprites.insert(-2, i)  # Вставка нового спрайта на предпоследнее место
+            all_sprites.empty()  # Очистка группы
+            for sprite in sprites:
+                all_sprites.add(sprite)  # Добавление спрайтов обратно в группу
 
-        return bg_image, pixels, cords
     return bg_image, pixels, cords
 
 
 # Функция обхода препятствий
 def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count, ccount,
-                  cccount, screen_w, screen_h, color, freeze):
+                  cccount, screen_w, screen_h, color, freeze, objects):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
     if pixels[cords] == 0 and hero.need_step(cords):
 
@@ -342,7 +332,8 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             barrier = hero.overcome_step(pixels, dx, dy)
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
     elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu.jpg" and color == 254):
-        bg_image, pixels, cords = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords)
+        bg_image, pixels, cords = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, cords,
+                                             objects, all_sprites)
         color = 16777215
 
     # Если пиксель цветной, идем к верхнему черному пикселю по этому Y
@@ -384,17 +375,19 @@ def game(pygame):
                                                                                      screen_h, objects)
 
     while running:
-
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
                         spHome, freeze)
 
-        running, cords, bg_image, pixels, color, freeze, inventory, savecords = event_handling(pygame.event.get(), hero, bg_image, objects,
-                                                                         pixels, cords, color, cursor, screen_w,
-                                                                         screen_h, freeze,all_sprites, inventory,
-                                                                                       savecords)
+        running, cords, bg_image, pixels, color, freeze, inventory, savecords = event_handling(pygame.event.get(), hero,
+                                                                                               bg_image, objects,
+                                                                                               pixels, cords, color,
+                                                                                               cursor, screen_w,
+                                                                                               screen_h, freeze,
+                                                                                               all_sprites, inventory,
+                                                                                               savecords)
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, freeze \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
-                            ccount, cccount, screen_w, screen_h, color, freeze)
+                            ccount, cccount, screen_w, screen_h, color, freeze, objects)
         game_update(pygame, screen, all_sprites, hero, cords, clock)
 
 
@@ -441,22 +434,28 @@ def music_play(key):
     if key == 'river':
         homesound.stop()
         icesound.stop()
+        pygame.mixer.Sound("core/data/musc/loc_sound.mp3").stop()
         riversound.play()
         riversound.set_volume(0.1)
     if key == 'stop':
         homesound.stop()
-        homesound.set_volume(0.0)
+        pygame.mixer.Sound("core/data/musc/loc_sound.mp3").stop()
+        homesound.set_volume(0.1)
     if key == 'ice':
         riversound.stop()
         homesound.stop()
-        homesound.set_volume(0.0)
+        pygame.mixer.Sound("core/data/musc/loc_sound.mp3").stop()
+        homesound.set_volume(0.1)
     if key == 'main':
-        homesound.set_volume(0)
         icesound.stop()
         riversound.stop()
-        homesound.set_volume(0.0)
+        pygame.mixer.Sound("core/data/musc/loc_sound.mp3").stop()
+        homesound.set_volume(0.1)
     if key == 'home':
+        homesound.stop()
+        icesound.stop()
         homesound.play()
+        pygame.mixer.Sound("core/data/musc/loc_sound.mp3").stop()
         homesound.set_volume(0.15)
 
 

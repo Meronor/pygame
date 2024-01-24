@@ -133,9 +133,9 @@ class Entity(Object):
     def pick_up(self, mouse_cords, hero_cords, inventory):
         # Проверка, находится ли курсор на энтити и как далеко находится герой
         if self.is_visible and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
-                                  and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
+                                and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
                 and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
-                     or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
+                     or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50) and self not in inventory:
             self.all_sprites.remove(self)
             self.is_visible = False
             self.picked_up = True
