@@ -236,21 +236,21 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, freeze, co
 
     elif color == 254:
         pygame.mixer.music.set_volume(0.1)
-        bg_image_past = bg_image
-        bg_image = "backgrounds/backg_main.jpg"
-        bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
-
-        wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background.jpg"), (screen_w, screen_h))
-        pixels = pygame.PixelArray(wb_bg_image)
-        if bg_image_past == 'backgrounds/forest.jpg':
+        if 'forest' in bg_image:
             hero.change_rect(screen_w * 0.4, screen_h * 0.7)
             cords = screen_w * 0.4, screen_h * 0.7
-        elif bg_image_past == 'river/background_river0.PNG':
+        elif 'background_river' in bg_image:
             hero.change_rect(screen_w * 0.05, screen_h * 0.75)
             cords = screen_w * 0.05, screen_h * 0.75
         else:
             hero.change_rect(screen_w * 0.75, screen_h * 0.75)
             cords = screen_w * 0.75, screen_h * 0.75
+        bg_image = "backgrounds/backg_main.jpg"
+        bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
+
+        wb_bg_image = pygame.transform.scale(load_image("wb_backgrounds/wb_background.jpg"), (screen_w, screen_h))
+        pixels = pygame.PixelArray(wb_bg_image)
+
 
     elif color == 65515:
         bg_image = "backgrounds/forest.jpg"
@@ -418,7 +418,7 @@ def action(bg, bg_image, pixels, screen_w, screen_h, inventory):
         print(item.active_color == 6921984)
         if item.active_color == 6921984 and item.action:
             f = True
-    if f:
+    if f and 'background_river' in bg_image:
         bg_image = f"river/background_riverF.PNG"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
