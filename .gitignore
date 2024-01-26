@@ -1,1 +1,5 @@
 all_data
+.idea/*
+core/data/__pycache__/*
+core/database/__pycache__/*
+core/handlers/__pycache__/*
