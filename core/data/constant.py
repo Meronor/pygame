@@ -10,6 +10,7 @@ tk = 200
 
 # цвета обозначающие переход на соответствующую локу
 main_color = 254
+load_color = 1471800
 forest_color = 65515
 home_color = 130816
 river_color = 66047
