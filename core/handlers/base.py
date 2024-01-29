@@ -47,13 +47,13 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    snejinka = Entity(all_sprites, True, entity_size, 'backg_main.jpg', "snejinka.PNG", snejinka_color)
+    snejinka = Entity(all_sprites, True, entity_size, 'centralloc.jpg', "snejinka.PNG", snejinka_color)
     snejinka.set_rect(snejinka_pos[0], snejinka_pos[1], None)
     # Второй объект
     # snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
     # snowball.set_rect(1000, 800)
     # Третий объект
-    key = Entity(all_sprites, True, entity_size, 'background_riverF.PNG', "key.PNG", None)
+    key = Entity(all_sprites, True, entity_size, 'background_river', "key.PNG", home_color)
     key.set_rect(key_pos[0], key_pos[1], None)
     # Второй объект
 
@@ -183,7 +183,7 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cu
                         item.image.get_height():
                     delta = (event.pos[0] - savecords[0], event.pos[1] - savecords[1])
                     item.set_rect(delta[0], delta[1], pixels[event.pos])
-                savecords = event.pos
+            savecords = event.pos
 
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -216,16 +216,25 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cu
 # Меняем фон
 def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords, objects, all_sprites, inventory,
                wb_bg_image):
-    f = False
+    freeze = False
+    open = False
     for item in inventory:
         if item.active_color == snejinka_color and item.action:
-            f = True
+            freeze = True
+        elif item.active_color == home_color and item.action:
+            open = True
     # Если нажали на соответствующий цвет выбираем фон
-    if color == river_color and not f:
-        bg_image = f"river/background_river0.PNG"
-        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
-        wb_bg_image = "wb_backgrounds/wb_background_river.jpg"
-        pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
+    if color == river_color:
+        if freeze:
+            bg_image = f"river/background_riverF.PNG"
+            bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+            wb_bg_image = "wb_backgrounds/wb_background_river_fr.jpg"
+            pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
+        else:
+            bg_image = f"river/background_river0.PNG"
+            bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+            wb_bg_image = "wb_backgrounds/wb_background_river.jpg"
+            pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
 
         # Устанавливаем место героя
         hero.change_rect(screen_w * 0.9, screen_h * 0.8)
@@ -253,10 +262,16 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords, obj
         else:
             hero.change_rect(screen_w * 0.75, screen_h * 0.75)
             cords = screen_w * 0.75, screen_h * 0.75
-        bg_image = "backgrounds/backg_main.jpg"
-        bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
-        wb_bg_image = "wb_backgrounds/wb_background.jpg"
-        pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
+        if open:
+            bg_image = f"centralloc/centralloc_open_door.jpg"
+            bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+            wb_bg_image = "wb_backgrounds/wb_background.jpg"
+            pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
+        else:
+            bg_image = "backgrounds/centralloc.jpg"
+            bg.image = pygame.transform.scale(load_image('centralloc/cloc0.PNG'), (screen_w, screen_h))
+            wb_bg_image = "wb_backgrounds/wb_background.jpg"
+            pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
 
     elif color == forest_color:
         bg_image = "backgrounds/forest.jpg"
@@ -268,7 +283,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords, obj
         hero.change_rect(screen_w * 0.01, screen_h * 0.75)
         cords = screen_w * 0.01, screen_h * 0.75
 
-    elif color == home_color:
+    elif color == home_color and open:
         bg_image = "backgrounds/home.jpg"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
 
@@ -424,14 +439,22 @@ def update_anim_counters(screen, all_sprites, count, ccount, cccount):
 
 
 def action(bg, bg_image, pixels, screen_w, screen_h, inventory):
-    f = False
+    freeze = False
+    open = False
     for item in inventory:
         if item.active_color == snejinka_color and item.action:
-            f = True
-    if f and 'background_river' in bg_image:
+            freeze = True
+        elif item.active_color == home_color and item.action:
+            open = True
+    if freeze and 'background_river' in bg_image:
         bg_image = f"river/background_riverF.PNG"
         bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
         wb_bg_image = "wb_backgrounds/wb_background_river_fr.jpg"
+        pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
+    elif open and 'centralloc' in bg_image:
+        bg_image = f"centralloc/centralloc_open_door.jpg"
+        bg.image = pygame.transform.scale(load_image(bg_image), (screen_w, screen_h))
+        wb_bg_image = "wb_backgrounds/wb_background.jpg"
         pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
 
     return bg_image, pixels
@@ -439,11 +462,14 @@ def action(bg, bg_image, pixels, screen_w, screen_h, inventory):
 
 def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor, spHome, inventory):
     fps += 1
-    f = False
+    freeze = False
+    open = False
     for item in inventory:
         if item.active_color == snejinka_color and item.action:
-            f = True
-    if 'background_river' in bg_image and fps % 40 == 0 and not f:
+            freeze = True
+        elif item.active_color == home_color and item.action:
+            open = True
+    if 'background_river' in bg_image and fps % 40 == 0 and not freeze:
         if fps >= 120:
             fps = 0
         bg.image = spRiv[fps // 40]
@@ -455,7 +481,7 @@ def animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBlu
         if fps >= 300:
             fps = 0
         bg.image = spHome[fps // 100]
-    if 'backg_main' in bg_image and fps % 120 == 0:
+    if 'centralloc' in bg_image and fps % 120 == 0 and not open:
         if fps >= 360:
             fps = 0
         bg.image = spCentralLoc[fps // 120]

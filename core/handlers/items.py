@@ -161,11 +161,11 @@ class Entity(Object):
             cur_bg = cur_bg.split('/')[1]
         except Exception:
             pass
-        if cur_bg not in self.bg:
+        if self.bg not in cur_bg:
             self.is_visible = False
-        elif cur_bg in self.bg and self.picked_up == False:
+        elif self.bg in cur_bg and not self.picked_up:
             self.is_visible = True
-        elif cur_bg in self.bg and self.picked_up == True:
+        elif self.bg in cur_bg and self.picked_up:
             self.is_visible = False
 
     def place(self, bg, cords):
