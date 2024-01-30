@@ -36,6 +36,12 @@ class Object(pygame.sprite.Sprite):
             return True
         return False
 
+    def checkForNear(self, hero_cords):
+        if (0 <= self.get_cords()[0] - hero_cords[0] <= 50
+                or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50):
+            return True
+        return False
+
 
 # Класс перса
 class Hero(Object):
@@ -151,11 +157,8 @@ class Entity(Object):
 
     def pick_up(self, mouse_cords, hero_cords, inventory):
         # Проверка, находится ли курсор на энтити и как далеко находится герой
-        if self.is_picable and self.is_visible and (
-                self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
-                and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
-                and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
-                     or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50) and self not in inventory:
+        if self.is_picable and self.is_visible and self.checkForInput(mouse_cords) and self.checkForNear(
+                hero_cords) and self not in inventory:
             self.all_sprites.remove(self)
             self.is_visible = False
             self.picked_up = True
@@ -171,10 +174,10 @@ class Entity(Object):
             pass
         if self.bg not in cur_bg:
             self.is_visible = False
-        elif self.bg in cur_bg and not self.picked_up:
-            self.is_visible = True
         elif self.bg in cur_bg and self.picked_up:
             self.is_visible = False
+        elif self.bg in cur_bg and not self.picked_up:
+            self.is_visible = True
 
     def place(self, bg, cords):
         self.change_rect(cords)

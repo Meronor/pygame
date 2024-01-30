@@ -4,7 +4,7 @@ import pygame
 
 from core.database.load import load, save
 # Импорт объектов-героев
-from core.handlers.items import Hero, Entity, Object, Button, Image
+from core.handlers.items import Hero, Entity, Object
 # Получение констант из конфигурации
 from core.data.constant import dS, tk, main_color, home_color, river_color, forest_color, snejinka_color, key_pos, \
     snejinka_pos, entity_size, inventory_size, white_color, load_color, hH, hW
@@ -53,7 +53,8 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
     # snowball.set_rect(1000, 800)
     # Третий объект
-    key = Entity(all_sprites, False, True, entity_size, 'background_river', "key.PNG", home_color)
+    key = Entity(all_sprites, True, True, entity_size, 'background_river', "key.PNG", home_color)
+    key.picked_up = True
     key.set_rect(key_pos[0], key_pos[1], None)
 
     # Второй объект
@@ -63,8 +64,8 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # frog.rect = frog.image.get_rect()
     # frog.rect.x, frog.rect.y = 190, 560
 
-    frog = Entity(all_sprites, False, False, (500, 300), 'background_river', "frog/frog0.PNG", frog_dialogue)
-    frog.set_rect(700, 700, None)
+    frog = Entity(all_sprites, True, False, (200, 200), 'background_river', "frog/frog0.PNG", frog_dialog)
+    frog.set_rect(330, 700, None)
 
     # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
@@ -81,13 +82,12 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
 
     # objects
     objects = [snejinka, key, frog]  # snowball
-    btns = []
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return cursor, hero, objects, btns
+    return cursor, hero, objects
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -144,7 +144,7 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
     savecords = (0, 0)
 
     # Спрайты для анимации
-    spFOX, spRiv, spCentralLoc, spBluefor, spHome = [], [], [], [], []
+    spFOX, spRiv, spCentralLoc, spBluefor, spHome, sp_dialog_frog = [], [], [], [], [], []
     for x in range(30):
         spFOX.append(pygame.transform.scale(load_image(f"movement/move{x}.PNG"), (dS, dS)))
     for x in range(3):
@@ -155,14 +155,16 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
         spBluefor.append(pygame.transform.scale(load_image(f"bluefor/blf{x}.jpg"), (screen_w, screen_h)))
     for x in range(3):
         spHome.append(pygame.transform.scale(load_image(f"home/home{x}.jpg"), (screen_w, screen_h)))
+    for x in range(32):
+        sp_dialog_frog.append(pygame.transform.scale(load_image(f"frog_dialog/d_frog{x}.PNG"), (screen_w, screen_h)))
 
     return running, isStep, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-           spCentralLoc, spBluefor, spHome, color, inventory, savecords
+           spCentralLoc, spBluefor, spHome, sp_dialog_frog, color, inventory, savecords
 
 
 # Обработка клика
-def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h,
-                   all_sprites, inventory, savecords, wb_bg_image):
+def event_handling(screen, events, hero, bg, bg_image, objects, pixels, cords, color, cursor, screen_w, screen_h,
+                   all_sprites, inventory, savecords, wb_bg_image, sp_dialog_frog):
     for event in events:
         # Выход из программы при нажатии на крестик
         if event.type == pygame.QUIT:
@@ -196,11 +198,19 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cu
             hero.need_rotate(event.pos)
             color = pixels[event.pos]
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
-            #for item in objects:
-            #    if item.checkForInput(event.pos) and item.active_color:
-            #        item.active_color()
-            #    # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-            #    item.pick_up(event.pos, hero.cords, inventory)
+            for item in objects:
+                try:
+                    if item.checkForInput(event.pos) and item.checkForNear(
+                            hero.cords) and item.active_color == frog_dialog:
+                        frog_dialog(screen, bg, sp_dialog_frog, all_sprites)
+                        for i in objects:
+                            if i.item_image == "key.PNG":
+                                inventory.append(i)
+                    # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
+                    item.pick_up(event.pos, hero.cords, inventory)
+                except Exception:
+                    pass
+                item.pick_up(event.pos, hero.cords, inventory)
 
             if inventory:
                 for i, item in enumerate(inventory):
@@ -387,7 +397,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
 
 # Переход на новый тик
-def game_update(pygame, screen, all_sprites, hero, cords, clock, btns):
+def game_update(pygame, screen, all_sprites, hero, cords, clock):
     # Проверка необходимости перевернуть героя
     hero.need_rotate(cords)
 
@@ -395,10 +405,6 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock, btns):
     all_sprites.draw(screen)
 
     clock.tick(tk)
-    for btn in btns:
-        btn.update(screen)
-
-    pygame.display.update()
 
     # Отображение новых изменений (перерисовка)
     pygame.display.flip()
@@ -409,18 +415,20 @@ def game(pygame):
     screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h, wb_bg_image = screen_init(pygame)
 
     # Получение героя, фон, картинку фона, остальные объекты в списке
-    cursor, hero, objects, btns = objects_init(pygame, all_sprites, screen_w, screen_h)
+    cursor, hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
-    spCentralLoc, spBluefor, spHome, color, inventory, savecords = game_init(screen, all_sprites, screen_w,
-                                                                             screen_h, objects)
+    spCentralLoc, spBluefor, spHome, sp_dialog_frog, color, inventory, savecords = game_init(screen, all_sprites,
+                                                                                             screen_w,
+                                                                                             screen_h, objects)
 
     while running:
         fps = animation(hero, bg, fps, spFOX, spRiv, ccount, bg_image, spCentralLoc, spBluefor,
                         spHome, inventory)
 
-        running, cords, bg_image, pixels, color, inventory, savecords, wb_bg_image = event_handling(pygame.event.get(),
+        running, cords, bg_image, pixels, color, inventory, savecords, wb_bg_image = event_handling(screen,
+                                                                                                    pygame.event.get(),
                                                                                                     hero,
                                                                                                     bg,
                                                                                                     bg_image, objects,
@@ -431,11 +439,12 @@ def game(pygame):
                                                                                                     all_sprites,
                                                                                                     inventory,
                                                                                                     savecords,
-                                                                                                    wb_bg_image)
+                                                                                                    wb_bg_image,
+                                                                                                    sp_dialog_frog)
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, wb_bg_image \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
                             ccount, cccount, screen_w, screen_h, color, objects, inventory, wb_bg_image)
-        game_update(pygame, screen, all_sprites, hero, cords, clock, btns)
+        game_update(pygame, screen, all_sprites, hero, cords, clock)
 
 
 def update_anim_counters(screen, all_sprites, count, ccount, cccount):
@@ -562,5 +571,25 @@ def corners(pos1, pos2):
         return 0, 0
 
 
-def frog_dialogue():
-    print(1)
+def frog_dialog(screen, bg, sp_dialog_frog, all_sprites):
+    fps = 0
+    save = bg.image
+    while True:
+
+        if fps % 10 == 0:
+            if fps >= 310:
+                bg.image = save
+                break
+            bg.image = sp_dialog_frog[fps // 10]
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+        fps += 1
+        screen.blit(bg.image, (0, 0))
+        pygame.display.update()
