@@ -4,7 +4,7 @@ import pygame
 
 from core.database.load import load, save
 # Импорт объектов-героев
-from core.handlers.items import Hero, Entity, Object
+from core.handlers.items import Hero, Entity, Object, Button, Image
 # Получение констант из конфигурации
 from core.data.constant import dS, tk, main_color, home_color, river_color, forest_color, snejinka_color, key_pos, \
     snejinka_pos, entity_size, inventory_size, white_color, load_color, hH, hW
@@ -47,20 +47,24 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
 
     # Первый объект
-    snejinka = Entity(all_sprites, True, entity_size, 'centralloc.jpg', "snejinka.PNG", snejinka_color)
+    snejinka = Entity(all_sprites, True, True, entity_size, 'centralloc.jpg', "snejinka.PNG", snejinka_color)
     snejinka.set_rect(snejinka_pos[0], snejinka_pos[1], None)
     # Второй объект
     # snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
     # snowball.set_rect(1000, 800)
     # Третий объект
-    key = Entity(all_sprites, True, entity_size, 'background_river', "key.PNG", home_color)
+    key = Entity(all_sprites, False, True, entity_size, 'background_river', "key.PNG", home_color)
     key.set_rect(key_pos[0], key_pos[1], None)
+
     # Второй объект
 
     # frog = pygame.sprite.Sprite(all_sprites)
     # frog.image = pygame.transform.scale(load_image("frog/frog0.PNG"), (600, 400))
     # frog.rect = frog.image.get_rect()
     # frog.rect.x, frog.rect.y = 190, 560
+
+    frog = Entity(all_sprites, False, False, (500, 300), 'background_river', "frog/frog0.PNG", frog_dialogue)
+    frog.set_rect(700, 700, None)
 
     # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
@@ -76,13 +80,14 @@ def objects_init(pygame, all_sprites, screen_w, screen_h):
     cursor.rect = cursor.image.get_rect()
 
     # objects
-    objects = [snejinka, key]  # snowball
+    objects = [snejinka, key, frog]  # snowball
+    btns = []
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
     hero.set_rect(screen_w * 0.75, screen_h * 0.75)
 
     # Возврат героя и списка всех objects
-    return cursor, hero, objects
+    return cursor, hero, objects, btns
 
 
 # Добавляем все спрайты в группу спрайтов и инициализируем начальные переменные
@@ -191,9 +196,11 @@ def event_handling(events, hero, bg, bg_image, objects, pixels, cords, color, cu
             hero.need_rotate(event.pos)
             color = pixels[event.pos]
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
-            for i in objects:
-                # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
-                i.pick_up(event.pos, hero.cords, inventory)
+            #for item in objects:
+            #    if item.checkForInput(event.pos) and item.active_color:
+            #        item.active_color()
+            #    # Если объект видно, мышка наведена на объект и герой находится не далеко, объект пропадает с экрана
+            #    item.pick_up(event.pos, hero.cords, inventory)
 
             if inventory:
                 for i, item in enumerate(inventory):
@@ -380,7 +387,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
 
 # Переход на новый тик
-def game_update(pygame, screen, all_sprites, hero, cords, clock):
+def game_update(pygame, screen, all_sprites, hero, cords, clock, btns):
     # Проверка необходимости перевернуть героя
     hero.need_rotate(cords)
 
@@ -388,6 +395,10 @@ def game_update(pygame, screen, all_sprites, hero, cords, clock):
     all_sprites.draw(screen)
 
     clock.tick(tk)
+    for btn in btns:
+        btn.update(screen)
+
+    pygame.display.update()
 
     # Отображение новых изменений (перерисовка)
     pygame.display.flip()
@@ -398,7 +409,7 @@ def game(pygame):
     screen, pixels, all_sprites, bg, bg_image, screen_w, screen_h, wb_bg_image = screen_init(pygame)
 
     # Получение героя, фон, картинку фона, остальные объекты в списке
-    cursor, hero, objects = objects_init(pygame, all_sprites, screen_w, screen_h)
+    cursor, hero, objects, btns = objects_init(pygame, all_sprites, screen_w, screen_h)
 
     # Задание значений игровых переменных
     running, barrier, isImpasse, clock, cords, dx, dy, fps, count, ccount, cccount, speccou, spFOX, spRiv, \
@@ -424,7 +435,7 @@ def game(pygame):
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, wb_bg_image \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
                             ccount, cccount, screen_w, screen_h, color, objects, inventory, wb_bg_image)
-        game_update(pygame, screen, all_sprites, hero, cords, clock)
+        game_update(pygame, screen, all_sprites, hero, cords, clock, btns)
 
 
 def update_anim_counters(screen, all_sprites, count, ccount, cccount):
@@ -549,3 +560,7 @@ def corners(pos1, pos2):
         return 1, 1
     else:
         return 0, 0
+
+
+def frog_dialogue():
+    print(1)

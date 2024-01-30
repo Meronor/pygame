@@ -30,6 +30,12 @@ class Object(pygame.sprite.Sprite):
 
         self.cords = (self.rect.x, self.rect.y)
 
+    def checkForInput(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
+                                                                                          self.rect.bottom):
+            return True
+        return False
+
 
 # Класс перса
 class Hero(Object):
@@ -108,7 +114,7 @@ class Hero(Object):
 
 # Класс предметов
 class Entity(Object):
-    def __init__(self, all_sprites, visible, size, bg, item_image, active_color):
+    def __init__(self, all_sprites, visible, picable, size, bg, item_image, active_color):
         super().__init__(all_sprites)
         self.all_sprites = all_sprites
         all_sprites.add(self)
@@ -117,6 +123,7 @@ class Entity(Object):
         self.size = size
         self.const_size = size
         self.is_visible = visible
+        self.is_picable = picable
         # На каком фоне показывается Object
         try:
             self.bg = os.listdir(bg)
@@ -144,8 +151,9 @@ class Entity(Object):
 
     def pick_up(self, mouse_cords, hero_cords, inventory):
         # Проверка, находится ли курсор на энтити и как далеко находится герой
-        if self.is_visible and (self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
-                                and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
+        if self.is_picable and self.is_visible and (
+                self.get_cords()[0] <= mouse_cords[0] <= self.get_cords()[0] + self.size[0]
+                and self.get_cords()[1] <= mouse_cords[1] <= self.get_cords()[1] + self.size[1]) \
                 and (0 <= self.get_cords()[0] - hero_cords[0] <= 50
                      or 0 >= (self.get_cords()[0] + self.size[0]) - hero_cords[0] >= -50) and self not in inventory:
             self.all_sprites.remove(self)
@@ -174,3 +182,53 @@ class Entity(Object):
         self.visible = True
         self.size = self.const_size
         self.bg = bg
+
+
+class Button():
+    def __init__(self, image, pos, text_input, font, base_color, hovering_color):
+        self.image = image
+        self.x_pos = pos[0]
+        self.y_pos = pos[1]
+        self.font = font
+        self.base_color, self.hovering_color = base_color, hovering_color
+        self.text_input = text_input
+        self.text = self.font.render(self.text_input, True, self.base_color)
+        if self.image is None:
+            self.image = self.text
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
+
+    def update(self, screen):
+        if self.image is not None:
+            screen.blit(self.image, self.rect)
+        screen.blit(self.text, self.text_rect)
+
+    def checkForInput(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
+                                                                                          self.rect.bottom):
+            return True
+        return False
+
+    def changeColor(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
+                                                                                          self.rect.bottom):
+            self.text = self.font.render(self.text_input, True, self.hovering_color)
+        else:
+            self.text = self.font.render(self.text_input, True, self.base_color)
+
+
+class Image:
+    def __init__(self, image, pos):
+        self.x_pos = pos[0]
+        self.y_pos = pos[1]
+        self.image = base.load_image(image)
+        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
+
+    def update(self, screen):
+        screen.blit(self.image, self.rect)
+
+    def checkForInput(self, position):
+        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
+                                                                                          self.rect.bottom):
+            return True
+        return False
