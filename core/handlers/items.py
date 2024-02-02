@@ -1,5 +1,5 @@
 import pygame
-from core.data.constant import hW, hH
+from core.data.constant import hero_corner
 import core.handlers.base as base
 import os
 
@@ -62,11 +62,11 @@ class Hero(Object):
 
         self.cords = (self.x, self.y)
 
-    def need_rotate(self, cords):
-        if self.centralX() > cords[0] and self.is_rotate():
+    def need_rotate(self, cords, screen_w, screen_h):
+        if self.centralX(screen_w) > cords[0] and self.is_rotate():
             self.image = pygame.transform.flip(self.image, True, False)
             self.rotate()
-        if self.centralX() < cords[0] and not self.is_rotate():
+        if self.centralX(screen_w) < cords[0] and not self.is_rotate():
             self.image = pygame.transform.flip(self.image, True, False)
             self.rotate()
 
@@ -79,43 +79,43 @@ class Hero(Object):
         else:
             self.f = True
 
-    def need_step(self, cords):
-        return cords[0] != self.centralX() or cords[1] != self.centralY()
+    def need_step(self, cords, screen_w, screen_h):
+        return cords[0] != self.centralX(screen_w) or cords[1] != self.centralY(screen_h)
 
-    def set_diff(self, cords, pixels):
+    def set_diff(self, cords, pixels, screen_w, screen_h):
         sx, sy = 0, 0
-        if cords[0] > self.centralX() and pixels[self.centralX() + 1, self.centralY()] == 0:
+        if cords[0] > self.centralX(screen_w) and pixels[self.centralX(screen_w) + 1, self.centralY(screen_h)] == 0:
             sx = 1
-        elif cords[0] < self.centralX() and pixels[self.centralX() - 1, self.centralY()] == 0:
+        elif cords[0] < self.centralX(screen_w) and pixels[self.centralX(screen_w) - 1, self.centralY(screen_h)] == 0:
             sx = -1
-        if cords[1] > self.centralY() and pixels[self.centralX(), self.centralY() + 1] == 0:
+        if cords[1] > self.centralY(screen_h) and pixels[self.centralX(screen_w), self.centralY(screen_h) + 1] == 0:
             sy = 1
-        elif cords[1] < self.centralY() and pixels[self.centralX(), self.centralY() - 1] == 0:
+        elif cords[1] < self.centralY(screen_h) and pixels[self.centralX(screen_w), self.centralY(screen_h) - 1] == 0:
             sy = -1
 
         return sx, sy
 
-    def next_step(self, cords, pixels):
-        sx, sy = self.set_diff(cords, pixels)
+    def next_step(self, cords, pixels, screen_w, screen_h):
+        sx, sy = self.set_diff(cords, pixels, screen_w, screen_h)
         self.set_rect(sx, sy)
         return (sx, sy) == (0, 0)
 
     # Идем вниз или вверх до тех пор,
     # Пока левый или правый пиксель (в зависимости от dx) не будет черный в ч\б фоне (0 - черный)
     # НЕ РАБОТАЕТ при обходе вверх!
-    def overcome_step(self, pixels, dx, dy):
-        if pixels[self.centralX() + dx, self.centralY()] != 0:
+    def overcome_step(self, pixels, screen_w, screen_h, dx, dy):
+        if pixels[self.centralX(screen_w) + dx, self.centralY(screen_h)] != 0:
             self.rect.y += dy
             return False
         else:
             return True
 
     # Координаты точки отсчета героя
-    def centralX(self):
-        return self.rect.x + hW
+    def centralX(self, screen_w):
+        return self.rect.x + int(hero_corner[0] * screen_w)
 
-    def centralY(self):
-        return self.rect.y + hH
+    def centralY(self, screen_h):
+        return self.rect.y + int(hero_corner[1] * screen_h)
 
 
 # Класс предметов
@@ -185,53 +185,3 @@ class Entity(Object):
         self.visible = True
         self.size = self.const_size
         self.bg = bg
-
-
-class Button():
-    def __init__(self, image, pos, text_input, font, base_color, hovering_color):
-        self.image = image
-        self.x_pos = pos[0]
-        self.y_pos = pos[1]
-        self.font = font
-        self.base_color, self.hovering_color = base_color, hovering_color
-        self.text_input = text_input
-        self.text = self.font.render(self.text_input, True, self.base_color)
-        if self.image is None:
-            self.image = self.text
-        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
-        self.text_rect = self.text.get_rect(center=(self.x_pos, self.y_pos))
-
-    def update(self, screen):
-        if self.image is not None:
-            screen.blit(self.image, self.rect)
-        screen.blit(self.text, self.text_rect)
-
-    def checkForInput(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
-                                                                                          self.rect.bottom):
-            return True
-        return False
-
-    def changeColor(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
-                                                                                          self.rect.bottom):
-            self.text = self.font.render(self.text_input, True, self.hovering_color)
-        else:
-            self.text = self.font.render(self.text_input, True, self.base_color)
-
-
-class Image:
-    def __init__(self, image, pos):
-        self.x_pos = pos[0]
-        self.y_pos = pos[1]
-        self.image = base.load_image(image)
-        self.rect = self.image.get_rect(center=(self.x_pos, self.y_pos))
-
-    def update(self, screen):
-        screen.blit(self.image, self.rect)
-
-    def checkForInput(self, position):
-        if position[0] in range(self.rect.left, self.rect.right) and position[1] in range(self.rect.top,
-                                                                                          self.rect.bottom):
-            return True
-        return False

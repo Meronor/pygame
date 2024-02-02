@@ -6,8 +6,9 @@ from core.database.load import load, save
 # Импорт объектов-героев
 from core.handlers.items import Hero, Entity, Object
 # Получение констант из конфигурации
-from core.data.constant import dS, tk, main_color, home_color, river_color, forest_color, snejinka_color, key_pos, \
-    snejinka_pos, entity_size, inventory_size, white_color, load_color, hH, hW
+from core.data.constant import dS, tk, main_color, home_color, river_color, forest_color, snejinka_color, hero_pos, \
+    key_pos, snejinka_pos, frog_pos, frog_size, entity_size, inventory_size, cursor_size, white_color, load_color, \
+    hero_corner
 
 
 # Первоначальная загрузка окна
@@ -45,46 +46,42 @@ def screen_init(pygame):
 # Добавляем объекты
 def objects_init(pygame, all_sprites, screen_w, screen_h):
     # Здесь добавляются разные герои
+    print(screen_w, screen_h)
 
     # Первый объект
-    snejinka = Entity(all_sprites, True, True, entity_size, 'centralloc.jpg', "snejinka.PNG", snejinka_color)
-    snejinka.set_rect(snejinka_pos[0], snejinka_pos[1], None)
+    snejinka = Entity(all_sprites, True, True, (entity_size[0] * screen_w, entity_size[1] * screen_h), 'centralloc.jpg',
+                      "snejinka.PNG", snejinka_color)
+    snejinka.set_rect(snejinka_pos[0] * screen_w, snejinka_pos[1] * screen_h, None)
     # Второй объект
-    # snowball = Entity(all_sprites, True, (100, 100), 'core/data/river', "snowball.png")
-    # snowball.set_rect(1000, 800)
-    # Третий объект
-    key = Entity(all_sprites, True, True, entity_size, 'background_river', "key.PNG", home_color)
+
+    key = Entity(all_sprites, True, True, (entity_size[0] * screen_w, entity_size[1] * screen_h), 'background_river',
+                 "key.PNG", home_color)
     key.picked_up = True
-    key.set_rect(key_pos[0], key_pos[1], None)
+    key.set_rect(key_pos[0] * screen_w, key_pos[1] * screen_h, None)
 
-    # Второй объект
-
-    # frog = pygame.sprite.Sprite(all_sprites)
-    # frog.image = pygame.transform.scale(load_image("frog/frog0.PNG"), (600, 400))
-    # frog.rect = frog.image.get_rect()
-    # frog.rect.x, frog.rect.y = 190, 560
-
-    frog = Entity(all_sprites, True, False, (200, 200), 'background_river', "frog/frog0.PNG", frog_dialog)
-    frog.set_rect(330, 700, None)
+    frog = Entity(all_sprites, True, False, (frog_size[0] * screen_w, frog_size[1] * screen_h), 'background_river',
+                  "frog/frog0.PNG", frog_dialog)
+    frog.set_rect(frog_pos[0] * screen_w, frog_pos[1] * screen_h, None)
 
     # !!!HERO всегда предпоследний!!!
     hero = Hero(all_sprites)
     hero_image = load_image("hero.jpg")
-    hero.image = pygame.transform.scale(hero_image, (dS, dS))
+    hero.image = pygame.transform.scale(hero_image, (dS[0] * screen_w, dS[1] * screen_h))
     hero.rect = hero.image.get_rect()
 
     # !!!Курсор всегда последний!!!
     cursor_image = "cursor.jpg"
     cursor = pygame.sprite.Sprite(all_sprites)
 
-    cursor.image = pygame.transform.scale(load_image(cursor_image), (screen_w * 0.05, screen_h * 0.05))
+    cursor.image = pygame.transform.scale(load_image(cursor_image),
+                                          (screen_w * cursor_size[0], screen_h * cursor_size[1]))
     cursor.rect = cursor.image.get_rect()
 
     # objects
     objects = [snejinka, key, frog]  # snowball
 
     # Начальные координаты левого верхнего угла прямоугольной области для персонажа
-    hero.set_rect(screen_w * 0.75, screen_h * 0.75)
+    hero.set_rect(screen_w * hero_pos[0], screen_h * hero_pos[1])
 
     # Возврат героя и списка всех objects
     return cursor, hero, objects
@@ -128,7 +125,7 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
     # isImpasse = True - маркер начала обхода препятствия (текущая пиксела не валидная)
     isImpasse = False
     # Новые требуемые координаты героя совпадают с собственными координатами героя
-    cords = (screen_w * 0.75, screen_h * 0.75)
+    cords = (screen_w * hero_pos[0], screen_h * hero_pos[1])
     inventory = []
     running = True
     dx, dy = 0, 0
@@ -146,7 +143,7 @@ def game_init(screen, all_sprites, screen_w, screen_h, objects):
     # Спрайты для анимации
     spFOX, spRiv, spCentralLoc, spBluefor, spHome, sp_dialog_frog = [], [], [], [], [], []
     for x in range(30):
-        spFOX.append(pygame.transform.scale(load_image(f"movement/move{x}.PNG"), (dS, dS)))
+        spFOX.append(pygame.transform.scale(load_image(f"movement/move{x}.PNG"), (dS[0] * screen_w, dS[1] * screen_h)))
     for x in range(3):
         spRiv.append(pygame.transform.scale(load_image(f"river/background_river{x}.PNG"), (screen_w, screen_h)))
     for x in range(3):
@@ -179,9 +176,11 @@ def event_handling(screen, events, hero, bg, bg_image, objects, pixels, cords, c
 
         if event.type == pygame.MOUSEMOTION:
             if pixels[event.pos] != 0 and pixels[event.pos] != white_color:
-                cursor.image = pygame.transform.scale(load_image('hand.png'), (screen_w * 0.05, screen_h * 0.05))
+                cursor.image = pygame.transform.scale(load_image('hand.png'),
+                                                      (screen_w * cursor_size[0], screen_h * cursor_size[1]))
             else:
-                cursor.image = pygame.transform.scale(load_image('cursor.jpg'), (screen_w * 0.05, screen_h * 0.05))
+                cursor.image = pygame.transform.scale(load_image('cursor.jpg'),
+                                                      (screen_w * cursor_size[0], screen_h * cursor_size[1]))
             # изменяем положение спрайта-стрелки
             cursor.rect.topleft = event.pos[0] - 20, event.pos[1] - 10
             for i, item in enumerate(inventory):
@@ -195,7 +194,7 @@ def event_handling(screen, events, hero, bg, bg_image, objects, pixels, cords, c
         # Проверка получения новых координат для героя
         if event.type == pygame.MOUSEBUTTONDOWN:
             # Новые требуемые координаты героя
-            hero.need_rotate(event.pos)
+            hero.need_rotate(event.pos, screen_w, screen_h)
             color = pixels[event.pos]
             # Проверяем, можно ли подобрать предмет, если да, то подбираем
             for item in objects:
@@ -266,7 +265,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords, obj
         wb_bg_image = lib['wb_bg_image']
         pixels = pygame.PixelArray(pygame.transform.scale(load_image(wb_bg_image), (screen_w, screen_h)))
 
-        cords = (hero.get_cords()[0] + hW, hero.get_cords()[1] + hH)
+        cords = (hero.get_cords()[0] + hero_corner[0] * screen_w, hero.get_cords()[1] + hero_corner[1] * screen_h)
 
     elif color == main_color:
         pygame.mixer.music.set_volume(0.1)
@@ -331,7 +330,8 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords, obj
 
     if inventory:
         for i, item in enumerate(inventory):
-            item.image = pygame.transform.scale(load_image(item.item_image), (inventory_size))
+            item.image = pygame.transform.scale(load_image(item.item_image),
+                                                (inventory_size[0] * screen_w, inventory_size[1] * screen_h))
             item.change_rect((i + 1) * 10 + 50 * i, 10)
             # Добавление спрайта на предпоследнее место в группе
             sprites = list(all_sprites.sprites())  # Преобразование группы в список
@@ -347,7 +347,7 @@ def background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords, obj
 def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count, ccount,
                   cccount, screen_w, screen_h, color, objects, inventory, wb_bg_image):
     # Смотрим, является ли пиксель по цвету в ч\б фоне черным (равен 0), иначе ничего не делаем
-    if pixels[cords] == 0 and hero.need_step(cords):
+    if pixels[cords] == 0 and hero.need_step(cords, screen_w, screen_h):
 
         ccount, cccount = update_anim_counters(screen, all_sprites, count, ccount, cccount)
         # Меняем корды героя, если хоть одна отличается от кордов клика
@@ -364,7 +364,7 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
         # Проверяем, обходит ли герой в данный момент препятствие
         if barrier:
             # Делаем шаг
-            isImpasse = hero.next_step(cords, pixels)
+            isImpasse = hero.next_step(cords, pixels, screen_w, screen_h)
 
         # ВАЖНО! Если после тика корды не поменялись, а мы всё равно прошли через верхнее условие,
         # То наш перс стоит в тупике, ниже код обхода этого тупика
@@ -372,13 +372,14 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
             # Если barrier = False, наш герой уже обходит препятствие
             if barrier:
                 # В corners проверяем различные ситуации, когда обходить надо по разному
-                dx, dy = corners((hero.centralX(), hero.centralY()), cords)
+                dx, dy = corners((hero.centralX(screen_w), hero.centralY(screen_h)), cords)
 
             # Меняем корды героя на dx, dy, если возвращается True, мы обошли препятствие,
             # Иначе повторяем код со следующим тиком
-            barrier = hero.overcome_step(pixels, dx, dy)
+            barrier = hero.overcome_step(pixels, screen_w, screen_h, dx, dy)
     # Если герой пришел к кордам курсора, но изначальный цвет был не 0, меняем фон
-    elif not hero.need_step(cords) and color != 0 or (bg_image == "backgrounds/start_menu2.jpg" and color == main_color) \
+    elif not hero.need_step(cords, screen_w, screen_h) and color != 0 or (
+            bg_image == "backgrounds/start_menu2.jpg" and color == main_color) \
             or (bg_image == "backgrounds/start_menu2.jpg" and color == load_color):
         bg_image, pixels, cords, wb_bg_image = background(hero, bg, bg_image, pixels, screen_w, screen_h, color, cords,
                                                           objects, all_sprites, inventory, wb_bg_image)
@@ -397,9 +398,9 @@ def step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrie
 
 
 # Переход на новый тик
-def game_update(pygame, screen, all_sprites, hero, cords, clock):
+def game_update(pygame, screen, all_sprites, hero, cords, clock, screen_w, screen_h):
     # Проверка необходимости перевернуть героя
-    hero.need_rotate(cords)
+    hero.need_rotate(cords, screen_w, screen_h)
 
     # Перерисовываем экран
     all_sprites.draw(screen)
@@ -444,7 +445,7 @@ def game(pygame):
         barrier, isImpasse, dx, dy, count, ccount, cccount, cords, bg_image, pixels, color, wb_bg_image \
             = step_handling(screen, bg, bg_image, pixels, cords, hero, all_sprites, barrier, isImpasse, dx, dy, count,
                             ccount, cccount, screen_w, screen_h, color, objects, inventory, wb_bg_image)
-        game_update(pygame, screen, all_sprites, hero, cords, clock)
+        game_update(pygame, screen, all_sprites, hero, cords, clock, screen_w, screen_h)
 
 
 def update_anim_counters(screen, all_sprites, count, ccount, cccount):
