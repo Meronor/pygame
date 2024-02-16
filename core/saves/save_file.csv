@@ -1,0 +1,7 @@
+name,param
+hero_cords,"(1257, 835)"
+bg_image,backgrounds/centralloc.jpg
+wb_bg_image,wb_backgrounds/wb_background.jpg
+all_sprites,<Group(4 sprites)>
+objects,"[<Entity Sprite(in 1 groups)>, <Entity Sprite(in 0 groups)>, <Entity Sprite(in 0 groups)>]"
+inventory,[]

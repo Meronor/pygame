@@ -2,7 +2,7 @@ import os
 import sys
 import pygame
 
-from core.database.load import load, save
+from core.saves.load import load, save
 # Импорт объектов-героев
 from core.handlers.items import Hero, Entity, Object
 # Получение констант из конфигурации
